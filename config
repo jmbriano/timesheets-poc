@@ -1,0 +1,17 @@
+# Only projects below will be included in the timesheets
+RELEVANT_PROJECTS=Sword Technologies, Internal
+TEMPLATE_FILENAME=ts-in.xlsx
+FIRST_DAY_COLUMN=G
+FIRST_PROJECT_ROW=6
+ILLNESS_ROW=14
+NAT_HOLIDAYS_ROW=15
+VACATIONS_ROW=16
+HOURS_FORMAT=0.0
+WARNING_WHEN_WDAY_IS_EMPTY=yes
+WARNING_WHEN_WDAY_TOTAL_ABOVE=8
+WARNING_WHEN_HOURS_ON_WEEKENDS=yes
+
+#Possible split modes:
+# reality: hours are loaded in the day they were actually worked
+# uniform: The total hours for the row are split evenly in all working days
+SPLIT_MODE=reality

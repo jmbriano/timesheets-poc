@@ -12,10 +12,10 @@ import java.io.InputStream;
 /**
  * Created by nemo on 3/31/17.
  */
-public class TimesheetWritter {
+public class TimesheetWriter {
 
     public static void main(String[] args) throws IOException, InvalidFormatException {
-        TimesheetWritter t = new TimesheetWritter();
+        TimesheetWriter t = new TimesheetWriter();
         t.writeSomething();
     }
 

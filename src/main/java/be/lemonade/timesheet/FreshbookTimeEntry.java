@@ -1,4 +1,4 @@
-package be.lemonade.timesheet
+package be.lemonade.timesheet;
 
 import java.util.List;
 
@@ -46,28 +46,5 @@ public class FreshbookTimeEntry {
         return myHours;
     }
 
-    public void setMyPerson(String myPerson) {
-        this.myPerson = myPerson;
-    }
-
-    public void setMyClient(String myClient) {
-        this.myClient = myClient;
-    }
-
-    public void setMyProject(String myProject) {
-        this.myProject = myProject;
-    }
-
-    public void setMyTask(String myTask) {
-        this.myTask = myTask;
-    }
-
-    public void setMyDate(String myDate) {
-        this.myDate = myDate;
-    }
-
-    public void setMyHours(String myHours) {
-        this.myHours = myHours;
-    }
 
 }

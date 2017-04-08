@@ -5,7 +5,7 @@ Modulos
 						- Person, Client, Project, Task, Date, Hours
 
 - Filter Clients + Internal
-- Transformer
+- TimeEntryTransformer
 	- IN: List<FreshbookTimeEntry>
 	- OUT: List<ClientTimeEntry>
 	

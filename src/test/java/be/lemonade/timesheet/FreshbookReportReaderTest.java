@@ -1,0 +1,25 @@
+package be.lemonade.timesheet;
+
+import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Assert.*;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
+
+public class FreshbookReportReaderTest extends TestCase{
+
+    public void testParseRecords() throws IOException {
+        FreshbookReportReader frr = new FreshbookReportReader();
+        List<FreshbookTimeEntry> timeEntryList = frr.parseRecords("input.csv");
+        Assert.assertTrue(timeEntryList.get(0).getMyPerson().contains("Employee 1"));
+    }
+
+    public void testParseRecordsSize() throws IOException{
+        FreshbookReportReader frr = new FreshbookReportReader();
+        List<FreshbookTimeEntry> timeEntryList = frr.parseRecords("input.csv");
+        Assert.assertTrue(timeEntryList.size() == 104);
+    }
+
+}

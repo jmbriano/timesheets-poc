@@ -9,11 +9,11 @@ Modulos
 	- IN: List<FreshbookTimeEntry>
 	- OUT: List<ClientTimeEntry>
 	
-- Create ClientTimeEntry 
+- Create SwordTimeEntry (DONE)
 
-- Create Persons
+- Create Employee 
 			- Name
-			- List<ClientTimeEntry>
+			- List<SwordTimeEntry>
 						- Person, date, Project, SC, QTM,CI, WP, Hours
 
 - Hour computation

@@ -1,9 +1,8 @@
 package be.lemonade.timesheet;
 
+import be.lemonade.timesheet.model.FreshbookTimeEntry;
 import junit.framework.TestCase;
 import org.junit.Assert;
-import org.junit.Assert.*;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;

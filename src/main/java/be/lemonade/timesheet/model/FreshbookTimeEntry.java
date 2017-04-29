@@ -1,4 +1,4 @@
-package be.lemonade.timesheet;
+package be.lemonade.timesheet.model;
 
 import java.util.List;
 

@@ -1,9 +1,10 @@
 package be.lemonade.timesheet;
 
+import be.lemonade.timesheet.model.FreshbookTimeEntry;
+import be.lemonade.timesheet.model.SwordTimeEntry;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
-import javax.xml.transform.sax.SAXSource;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;

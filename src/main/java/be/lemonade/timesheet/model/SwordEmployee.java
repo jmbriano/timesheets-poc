@@ -1,7 +1,5 @@
 package be.lemonade.timesheet.model;
 
-import be.lemonade.timesheet.ActivityKey;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

@@ -9,38 +9,20 @@ public class SwordTimeEntry {
 
     private Date date;
     private String employee;
-    private String project;
-    private String specificContract;
-    private String qtm_rfa;
-    private String wp;
+    private ActivityKey activity;
     private String task;
     private double time_hs;
 
     public SwordTimeEntry(String employee, String project, String sc, String qtm, String wp, String task, Date date, double hs){
         this.employee = employee;
-        this.project = project;
-        this.specificContract = sc;
-        this.qtm_rfa = qtm;
-        this.wp = wp;
+        this.activity = new ActivityKey(project,sc,qtm,wp);
         this.task = task;
         this.date = date;
         this.time_hs = hs;
     }
 
-    public String getProject() {
-        return project;
-    }
-
-    public String getSpecificContract() {
-        return specificContract;
-    }
-
-    public String getQtm_rfa() {
-        return qtm_rfa;
-    }
-
-    public String getWp() {
-        return wp;
+    public ActivityKey getActivity() {
+        return activity;
     }
 
     public String getTask() {

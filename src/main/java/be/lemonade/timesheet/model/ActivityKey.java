@@ -1,4 +1,4 @@
-package be.lemonade.timesheet;
+package be.lemonade.timesheet.model;
 
 /**
  * Created by nemo on 4/8/17.
@@ -12,8 +12,8 @@ public class ActivityKey {
 
     public ActivityKey(String project, String sc, String qtm, String wp) {
         this.project = project;
-        this.specificContract = specificContract;
-        this.qtm_rfa = qtm_rfa;
+        this.specificContract = sc;
+        this.qtm_rfa = qtm;
         this.wp = wp;
     }
 
@@ -40,6 +40,6 @@ public class ActivityKey {
 
     @Override
     public int hashCode() {
-        return (this.project + this.specificContract + this.qtm_rfa + this.wp).hashCode();
+        return (this.project +"-"+ this.specificContract +"-"+ this.qtm_rfa +"-"+ this.wp).hashCode();
     }
 }

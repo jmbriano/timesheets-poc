@@ -26,8 +26,9 @@ Modulos
 Casos de uso:
 - Crear los timesheets basados en las registros de Freshbook
 - Warning si no llega a las horas del mes
-- Reporte de dias sin entradas
-- Warning si hay horas en fines de semana
+- Reporte de dias habiles sin entradas
 - Input de los budget cards
 - Get national holidays from File
 - Crear un txt con info de cada uno (resumen)
+- Resumen de proyectos en los que cargó cada persona
+- Warning si hay horas en fines de semana

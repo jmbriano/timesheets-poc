@@ -1,6 +1,7 @@
 # Only projects below will be included in the timesheets
 RELEVANT_PROJECTS=Sword Technologies, Internal
 TEMPLATE_FILENAME=ts-in.xlsx
+MONTH=04-2017
 FIRST_DAY_COLUMN=G
 FIRST_PROJECT_ROW=6
 ILLNESS_ROW=14

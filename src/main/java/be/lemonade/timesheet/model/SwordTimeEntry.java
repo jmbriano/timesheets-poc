@@ -21,6 +21,10 @@ public class SwordTimeEntry {
         this.time_hs = hs;
     }
 
+    public Date getDate() {
+        return date;
+    }
+
     public ActivityKey getActivity() {
         return activity;
     }

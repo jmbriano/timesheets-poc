@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by nemo on 4/29/17.
- */
 public class SwordEmployee {
 
     private String name;
@@ -17,7 +14,7 @@ public class SwordEmployee {
         timeEntries = new ArrayList<SwordTimeEntry>();
     }
 
-    /** This method adds the given time entry to the list of time entries of this empoyee
+    /** This method adds the given time entry to the list of time entries of this employee
      * @param timeEntry the Time entry to add to the list.
      */
     public void addSwordEntry(SwordTimeEntry timeEntry) {
@@ -34,8 +31,15 @@ public class SwordEmployee {
      * @return
      */
     public List<ActivityKey> getAllTimeEntryKeys(){
-        //TODO:
-        return new ArrayList<ActivityKey>();
+        List<ActivityKey> allTimeEntryKeys = new ArrayList<ActivityKey>();
+
+        for(SwordTimeEntry currentEntry : timeEntries){
+            if(!allTimeEntryKeys.contains(currentEntry.getActivity())){
+                allTimeEntryKeys.add(currentEntry.getActivity());
+            }
+        }
+
+        return allTimeEntryKeys;
     }
 
     /** This method sums and returns the total hours spent in a given day for a given activity (row)
@@ -45,6 +49,14 @@ public class SwordEmployee {
      * @return
      */
     public double getTotalTimeForActivityOnDate(ActivityKey activity, Date date){
-        return 0;
+        int activityTotal = 0;
+
+        for(SwordTimeEntry currentEntry : timeEntries){
+            if(currentEntry.getDate().equals(date) && currentEntry.getActivity().equals(activity)){
+                activityTotal += currentEntry.getTime_hs();
+            }
+        }
+
+        return activityTotal;
     }
 }

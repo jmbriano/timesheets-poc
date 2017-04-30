@@ -9,13 +9,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Created by nemo on 3/31/17.
- */
-public class TimesheetWriter {
+public class TimesheetWriterTest {
 
     public static void main(String[] args) throws IOException, InvalidFormatException {
-        TimesheetWriter t = new TimesheetWriter();
+        TimesheetWriterTest t = new TimesheetWriterTest();
         t.writeSomething();
     }
 
@@ -47,14 +44,11 @@ public class TimesheetWriter {
         System.out.println("cell3 = " + cell3.getNumericCellValue());
 
 
-
-
-        XSSFCellStyle style=(XSSFCellStyle) wb.createCellStyle();
+        XSSFCellStyle style = (XSSFCellStyle) wb.createCellStyle();
         style.setDataFormat(wb.createDataFormat().getFormat("0.0"));
 
         cell2.setCellType(CellType.NUMERIC);
         cell2.setCellStyle(style);
-
 
 
         // Write the output to a file
@@ -62,7 +56,6 @@ public class TimesheetWriter {
         wb.write(fileOut);
         fileOut.close();
     }
-
 
 
 }

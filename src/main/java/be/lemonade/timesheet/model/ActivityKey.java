@@ -1,8 +1,5 @@
 package be.lemonade.timesheet.model;
 
-/**
- * Created by nemo on 4/8/17.
- */
 public class ActivityKey {
 
     private String project;

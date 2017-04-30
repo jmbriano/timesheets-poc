@@ -1,5 +1,7 @@
 package be.lemonade.timesheet.model;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -50,13 +52,21 @@ public class SwordEmployee {
      */
     public double getTotalTimeForActivityOnDate(ActivityKey activity, Date date){
         int activityTotal = 0;
+        String inDate = parseDate(date);
 
         for(SwordTimeEntry currentEntry : timeEntries){
-            if(currentEntry.getDate().equals(date) && currentEntry.getActivity().equals(activity)){
+            String currentDate = parseDate(currentEntry.getDate());
+            if(inDate.equals(currentDate) && currentEntry.getActivity().equals(activity)){
                 activityTotal += currentEntry.getTime_hs();
             }
         }
 
         return activityTotal;
+    }
+
+    public String parseDate(Date date){
+        DateFormat outputFormatter = new SimpleDateFormat("MM/dd/yyyy");
+        String output = outputFormatter.format(date);
+        return output;
     }
 }

@@ -13,9 +13,9 @@ public class SwordTimeEntry {
     private String task;
     private double time_hs;
 
-    public SwordTimeEntry(String employee, String project, String sc, String qtm, String wp, String task, Date date, double hs){
+    public SwordTimeEntry(String employee, String project, String sc, String qtm, String ci, String wp, String task, Date date, double hs){
         this.employee = employee;
-        this.activity = new ActivityKey(project,sc,qtm,wp);
+        this.activity = new ActivityKey(project,sc,qtm,ci,wp);
         this.task = task;
         this.date = date;
         this.time_hs = hs;

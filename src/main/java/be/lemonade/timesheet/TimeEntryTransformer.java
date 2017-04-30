@@ -16,7 +16,7 @@ import java.util.List;
 
 public class TimeEntryTransformer {
 
-    private static String MAPPER_FILE_NAME = "config/mapper.csv";
+    private static String MAPPER_FILE_NAME = "configuration/mapper.csv";
     private static String DATE_FORMAT = "MM/dd/yyyy";
 
     public static List<SwordTimeEntry> transform (List<FreshbookTimeEntry> timeEntries){
@@ -32,6 +32,7 @@ public class TimeEntryTransformer {
                                     map.sw_project,
                                     map.sw_sc,
                                     map.sw_qtm,
+                                    map.sw_ci,
                                     map.sw_wp,
                                     "TODO, note",
                                     parseDate(fte.getMyDate()),
@@ -64,6 +65,7 @@ public class TimeEntryTransformer {
             m.sw_project = record.get("Timesheet Project");
             m.sw_sc = record.get("Timesheet SC");
             m.sw_qtm = record.get("Timesheet QTM");
+            m.sw_ci = record.get("Timesheet CI");
             m.sw_wp = record.get("Timesheet WP");
 
             entries.add(m);
@@ -93,6 +95,7 @@ public class TimeEntryTransformer {
         public String sw_project;
         public String sw_sc;
         public String sw_qtm;
+        public String sw_ci;
         public String sw_wp;
 
     }

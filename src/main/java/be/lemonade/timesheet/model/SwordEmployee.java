@@ -2,9 +2,7 @@ package be.lemonade.timesheet.model;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class SwordEmployee {
 
@@ -29,7 +27,7 @@ public class SwordEmployee {
 
     /** This method returns a list of unique ActivityKey
      * based on the entries existing in the employee
-     * The list must be sorted by: Project, SC, QTM, WP
+     * The list must be sorted by: Project, SC, QTM, CI, WP
      * @return
      */
     public List<ActivityKey> getAllTimeEntryKeys(){
@@ -40,6 +38,24 @@ public class SwordEmployee {
                 allTimeEntryKeys.add(currentEntry.getActivity());
             }
         }
+
+        Collections.sort(allTimeEntryKeys, new Comparator<ActivityKey>() {
+            public int compare(ActivityKey k1, ActivityKey k2) {
+                if (k1.getProject().equalsIgnoreCase(k2.getProject()))
+                    if (k1.getSpecificContract().equalsIgnoreCase(k2.getSpecificContract()))
+                        if(k1.getQtm_rfa().equalsIgnoreCase(k2.getQtm_rfa()))
+                            if(k1.getCI().equalsIgnoreCase(k2.getCI()))
+                                return k1.getWp().compareTo(k2.getWp());
+                            else
+                                return k1.getCI().compareTo(k2.getCI());
+                        else
+                            return k1.getQtm_rfa().compareTo(k2.getQtm_rfa());
+                    else
+                        return k1.getSpecificContract().compareTo(k2.getSpecificContract());
+                else
+                    return k1.getProject().compareTo(k2.getProject());
+            }
+        });
 
         return allTimeEntryKeys;
     }

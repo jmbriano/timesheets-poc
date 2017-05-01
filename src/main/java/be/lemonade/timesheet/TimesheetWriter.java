@@ -2,82 +2,179 @@ package be.lemonade.timesheet;
 
 import be.lemonade.timesheet.model.ActivityKey;
 import be.lemonade.timesheet.model.SwordEmployee;
-import com.sun.tools.javac.util.Assert;
+import be.lemonade.timesheet.model.SwordTimeEntry;
+import be.lemonade.timesheet.util.ConfigurationReader;
+import be.lemonade.timesheet.util.DateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
 import java.io.*;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 public class TimesheetWriter {
 
+    private static int SHEET_ID = 0;
+
+    public static void main(String[] args) throws IOException, InvalidFormatException {
+        SwordEmployee employee = new SwordEmployee("Test user");
+        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
+        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
+        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
+        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(4,4,2017),8));
+        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(5,4,2017),9));
+        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(1,4,2017),2));
+        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm2", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),1));
+
+        write(employee);
+
+        SwordEmployee employee2 = new SwordEmployee("Test user2");
+        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
+        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
+        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
+        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(4,4,2017),8));
+        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(5,4,2017),9));
+        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(1,4,2017),2));
+        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm2", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),1));
+
+        write(employee2);
+
+    }
+
     public static void write(SwordEmployee employee) throws IOException, InvalidFormatException {
+
+        ConfigurationReader conf = new ConfigurationReader();
+        int month = Integer.parseInt(conf.getValue(ConfigurationReader.MONTH));
+        int year = Integer.parseInt(conf.getValue(ConfigurationReader.YEAR));
+        int firstRowWithEntries = Integer.parseInt(conf.getValue(ConfigurationReader.FIRST_PROJECT_ROW))-1;
+        String format = conf.getValue(ConfigurationReader.HOURS_FORMAT);
+        String templateFileName = conf.getValue(ConfigurationReader.TEMPLATE_FILENAME);
+        String outputNameTemplate = conf.getValue(ConfigurationReader.OUTPUT_FILENAME);
 
         String employeeName = employee.getName();
 
         // Open template XLS
-        InputStream inp = new FileInputStream("ts-in.xlsx");
+        InputStream inp = new FileInputStream(templateFileName);
         Workbook wb = WorkbookFactory.create(inp);
 
+        Sheet sheet = wb.getSheetAt(SHEET_ID);
+
         // Write employee name
-        Sheet sheet = wb.getSheetAt(0);
-        Row row = sheet.getRow(2);
-        Cell cell = row.getCell(CellReference.convertColStringToIndex("P"));
-        if (cell == null)
-            cell = row.createCell(CellReference.convertColStringToIndex("P"));
-        cell.setCellType(CellType.STRING);
-        cell.setCellValue(employeeName);
+        writeEmployeeName(sheet, employeeName);
+        writeTimesheetDate(sheet, DateUtil.createDate(1,month,year));
 
         // Get unique Activity list
         List<ActivityKey> allKeys = employee.getAllTimeEntryKeys();
 
+        int rowIndex = firstRowWithEntries;
+
         // Iterate the list of Activity
         for (ActivityKey key : allKeys) {
 
-            // Iterate each day and ask number of hours
-            for (int i = 1; i <= lastDayOfMonth(4, 2017); i++) {
-                Date date = null;
-                double hours = employee.getTotalTimeForActivityOnDate(key, date);
+            writeRowHeader(sheet, rowIndex,key);
+            writeTimes(sheet.getRow(rowIndex),key,month,year,employee, format);
 
-                // Write value in cell (only if bigger than 0)
-                if (hours < 0) {
-                    cell.setCellType(CellType.NUMERIC);
-                    cell.setCellValue(hours);
-                } else {
-                    cell.setCellType(CellType.BLANK);
-                }
-            }
+            rowIndex++;
         }
 
         // Recalculate formulas
         HSSFFormulaEvaluator.evaluateAllFormulaCells(wb);
 
         // Write output file
-        FileOutputStream fileOut = new FileOutputStream("Timesheet " + employeeName);
+        FileOutputStream fileOut = new FileOutputStream(createOutputFilename(year, month, employeeName, outputNameTemplate));
         wb.write(fileOut);
         fileOut.close();
     }
 
-    private static int lastDayOfMonth(int month, int year) {
-        int days = 0;
+    private static String createOutputFilename(int year, int month, String employeeName, String outputNameTemplate) {
+        String name = outputNameTemplate;
+        name = name.replace("YYYY", year+"");
+        name = name.replace("MM", month+"");
+        name = name.replace("NNNNN", employeeName.toUpperCase());
+        return name;
 
-        if (month == 0) {
-            System.out.println("Please enter a valid month number");
-        } else if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) {
-            days = 31;
-        } else if (month == 4 || month == 6 || month == 9 || month == 11) {
-            days = 30;
-        } else {
-            if ((year % 400 == 0) || ((year % 4 == 0) && (year % 100 != 0))) {
-                days = 29;
-            } else {
-                days = 28;
+
+    }
+
+    private static void writeTimes(Row row, ActivityKey key, int month, int year, SwordEmployee employee, String format) {
+        int firstDayColumn = CellReference.convertColStringToIndex("G");
+
+        // Iterate each day and ask number of hours
+        for (int day = 1; day <= lastDayOfMonth(month, year); day++) {
+            Date date = DateUtil.createDate(day, month, year);
+
+            double hours = employee.getTotalTimeForActivityOnDate(key, date);
+
+            // Write value in cell (only if bigger than 0)
+            if (hours > 0) {
+
+                Cell cell = row.getCell(firstDayColumn + day - 1);
+                if (cell == null)
+                    cell = row.createCell(firstDayColumn + day - 1);
+
+                XSSFCellStyle style = (XSSFCellStyle) row.getSheet().getWorkbook().createCellStyle();
+                style.setDataFormat(row.getSheet().getWorkbook().createDataFormat().getFormat(format));
+
+                cell.setCellType(CellType.NUMERIC);
+                cell.setCellStyle(style);
+                cell.setCellValue(hours);
+                row.getSheet().autoSizeColumn(firstDayColumn + day - 1);
             }
-            // I thought of maybe creating an array of int
-            // and then checking if month was contained within the array, it's shorter than all those ORs
         }
-        return days;
+    }
+
+    private static void writeRowHeader(Sheet sheet, int rowIndex, ActivityKey key) {
+        writeStringInCell(sheet, rowIndex,CellReference.convertColStringToIndex("A"),key.getProject());
+        writeStringInCell(sheet, rowIndex,CellReference.convertColStringToIndex("B"),key.getSpecificContract());
+        writeStringInCell(sheet, rowIndex,CellReference.convertColStringToIndex("C"),key.getQtm_rfa());
+        writeStringInCell(sheet, rowIndex,CellReference.convertColStringToIndex("D"),key.getCI());
+        writeStringInCell(sheet, rowIndex,CellReference.convertColStringToIndex("E"),key.getWp());
+    }
+
+    private static void writeStringInCell(Sheet sheet, int rowIndex, int colIndex, String text) {
+        Row row = sheet.getRow(rowIndex);
+        Cell cell = row.getCell(colIndex);
+        if (cell == null)
+            cell = row.createCell(colIndex);
+        cell.setCellType(CellType.STRING);
+        cell.setCellValue(text);
+    }
+
+    private static void writeTimesheetDate(Sheet sheet, Date date) {
+
+        Row row = sheet.getRow(1);
+        Cell cell = row.getCell(CellReference.convertColStringToIndex("E"));
+        if (cell == null)
+            cell = row.createCell(CellReference.convertColStringToIndex("E"));
+        CellStyle cellStyle = cell.getCellStyle();
+        CreationHelper createHelper = sheet.getWorkbook().getCreationHelper();
+        cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("mmm-yyyy"));
+        cell.setCellStyle(cellStyle);
+        cell.setCellValue(date);
+
+    }
+
+    private static void writeEmployeeName(Sheet sheet, String name) {
+        Row row = sheet.getRow(1);
+        Cell cell = row.getCell(CellReference.convertColStringToIndex("P"));
+        if (cell == null)
+            cell = row.createCell(CellReference.convertColStringToIndex("P"));
+        cell.setCellType(CellType.STRING);
+        cell.setCellValue(name);
+    }
+
+    private static int lastDayOfMonth(int month, int year) {
+        Date firstDay = DateUtil.createDate(1,month,year);
+        Date date = DateUtil.getLastDateOfMonth(firstDay);
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        return cal.get(Calendar.DAY_OF_MONTH);
+
     }
 }

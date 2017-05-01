@@ -18,7 +18,7 @@ public class TimesheetWriterTest {
 
     public void writeSomething() throws IOException, InvalidFormatException {
 
-        InputStream inp = new FileInputStream("ts-in.xlsx");
+        InputStream inp = new FileInputStream("TEMPLATE.xlsx");
 
         Workbook wb = WorkbookFactory.create(inp);
         Sheet sheet = wb.getSheetAt(0);

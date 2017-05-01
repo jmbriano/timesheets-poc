@@ -24,11 +24,12 @@ Modulos
 
 
 Casos de uso:
-- Crear los timesheets basados en las registros de Freshbook
-- Warning si no llega a las horas del mes
-- Reporte de dias habiles sin entradas
-- Input de los budget cards
+- Crear los timesheets basados en las registros de Freshbook (DONE)
 - Get national holidays from File
-- Crear un txt con info de cada uno (resumen)
-- Resumen de proyectos en los que cargó cada persona
 - Warning si hay horas en fines de semana
+- Resumen de proyectos en los que cargó cada persona
+- Warning si no llega a las horas del mes (IMPL DELAYED)
+- Reporte de dias habiles sin entradas  (IMPL DELAYED)
+- Input de los budget cards  (IMPL DELAYED)
+- Crear un txt con info de cada uno (resumen) (IMPL DELAYED)
+

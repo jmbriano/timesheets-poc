@@ -12,7 +12,7 @@ import java.util.List;
 
 public class FreshbookReportReader {
 
-    public List<FreshbookTimeEntry> parseRecords(String filename) throws IOException {
+    public static List<FreshbookTimeEntry> parseRecords(String filename) throws IOException {
 
         List<FreshbookTimeEntry> records = new ArrayList<FreshbookTimeEntry>();
         Reader fr = new FileReader(filename);

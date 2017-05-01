@@ -2,6 +2,7 @@ package be.lemonade.timesheet;
 
 import be.lemonade.timesheet.model.FreshbookTimeEntry;
 import be.lemonade.timesheet.model.SwordTimeEntry;
+import be.lemonade.timesheet.util.ConfigurationReader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -17,9 +18,16 @@ import java.util.List;
 public class TimeEntryTransformer {
 
     private static String MAPPER_FILE_NAME = "configuration/mapper.csv";
-    private static String DATE_FORMAT = "MM/dd/yyyy";
+    private static String DATE_FORMAT = "MM/dd/yy";
 
-    public static List<SwordTimeEntry> transform (List<FreshbookTimeEntry> timeEntries){
+    public static List<SwordTimeEntry> transform (List<FreshbookTimeEntry> timeEntries) {
+        try {
+            ConfigurationReader configurationReader = new ConfigurationReader();
+            DATE_FORMAT = configurationReader.getValue(ConfigurationReader.FRESHBOOK_DATE_FORMAT);
+        } catch (IOException e){
+            // Do nothing. keep default date format
+        }
+
         List<SwordTimeEntry> swordTimeEntryList = new ArrayList<SwordTimeEntry>();
         try {
             List<MapperEntry> mappers = readMapEntries();

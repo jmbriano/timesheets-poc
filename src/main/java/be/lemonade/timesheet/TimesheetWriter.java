@@ -85,15 +85,17 @@ public class TimesheetWriter {
         HSSFFormulaEvaluator.evaluateAllFormulaCells(wb);
 
         // Write output file
-        FileOutputStream fileOut = new FileOutputStream(createOutputFilename(year, month, employeeName, outputNameTemplate));
+        String filename = createOutputFilename(year, month, employeeName, outputNameTemplate);
+        System.out.println("  Created file: "+ filename);
+        FileOutputStream fileOut = new FileOutputStream(filename);
         wb.write(fileOut);
         fileOut.close();
     }
 
     private static String createOutputFilename(int year, int month, String employeeName, String outputNameTemplate) {
         String name = outputNameTemplate;
-        name = name.replace("YYYY", year+"");
-        name = name.replace("MM", month+"");
+        name = name.replace("YYYY", String.format("%04d", year));
+        name = name.replace("MM", String.format("%02d", month));
         name = name.replace("NNNNN", employeeName.toUpperCase());
         return name;
 
@@ -116,13 +118,13 @@ public class TimesheetWriter {
                 if (cell == null)
                     cell = row.createCell(firstDayColumn + day - 1);
 
-                XSSFCellStyle style = (XSSFCellStyle) row.getSheet().getWorkbook().createCellStyle();
+                CellStyle style = cell.getCellStyle();
                 style.setDataFormat(row.getSheet().getWorkbook().createDataFormat().getFormat(format));
 
                 cell.setCellType(CellType.NUMERIC);
                 cell.setCellStyle(style);
                 cell.setCellValue(hours);
-                row.getSheet().autoSizeColumn(firstDayColumn + day - 1);
+
             }
         }
     }

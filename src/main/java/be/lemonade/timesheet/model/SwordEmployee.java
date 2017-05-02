@@ -67,7 +67,7 @@ public class SwordEmployee {
      * @return
      */
     public double getTotalTimeForActivityOnDate(ActivityKey activity, Date date){
-        int activityTotal = 0;
+        double activityTotal = 0;
         String inDate = parseDate(date);
 
         for(SwordTimeEntry currentEntry : timeEntries){

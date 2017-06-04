@@ -47,21 +47,26 @@ public class SwordEmployee {
             public int compare(ActivityKey k1, ActivityKey k2) {
                 Integer k1SP;
                 Integer k2SP;
+                Integer k1QTM;
+                Integer k2QTM;
                 try {
                     k1SP = Integer.parseInt(k1.getSpecificContract());
                     k2SP = Integer.parseInt(k2.getSpecificContract());
+                    k1QTM = Integer.parseInt(k1.getQtm_rfa());
+                    k2QTM = Integer.parseInt(k2.getQtm_rfa());
                 } catch (NumberFormatException e) {
                     k1SP = k2SP = 0;
+                    k1QTM = k2QTM = 0;
                 }
                 if (k1.getProject().equalsIgnoreCase(k2.getProject()))
                     if (k1SP.equals(k2SP))
-                        if (k1.getQtm_rfa().equalsIgnoreCase(k2.getQtm_rfa()))
+                        if (k1QTM.equals(k2QTM))
                             if (k1.getCI().equalsIgnoreCase(k2.getCI()))
                                 return k1.getWp().compareTo(k2.getWp());
                             else
                                 return k1.getCI().compareTo(k2.getCI());
                         else
-                            return k1.getQtm_rfa().compareTo(k2.getQtm_rfa());
+                            return k1QTM.compareTo(k2QTM);
                     else
                         return k1SP.compareTo(k2SP);
                 else

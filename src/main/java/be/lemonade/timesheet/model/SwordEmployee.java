@@ -51,12 +51,20 @@ public class SwordEmployee {
                 Integer k2QTM;
                 try {
                     k1SP = Integer.parseInt(k1.getSpecificContract());
+                } catch (NumberFormatException e) {
+                    k1SP = 0;
+                }try {
                     k2SP = Integer.parseInt(k2.getSpecificContract());
+                } catch (NumberFormatException e) {
+                    k2SP = 0;
+                }try {
                     k1QTM = Integer.parseInt(k1.getQtm_rfa());
+                } catch (NumberFormatException e) {
+                    k1QTM = 0;
+                }try {
                     k2QTM = Integer.parseInt(k2.getQtm_rfa());
                 } catch (NumberFormatException e) {
-                    k1SP = k2SP = 0;
-                    k1QTM = k2QTM = 0;
+                    k2QTM = 0;
                 }
                 if (k1.getProject().equalsIgnoreCase(k2.getProject()))
                     if (k1SP.equals(k2SP))

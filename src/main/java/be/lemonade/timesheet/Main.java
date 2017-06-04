@@ -7,6 +7,8 @@ import be.lemonade.timesheet.util.ConfigurationReader;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -58,6 +60,42 @@ public class Main {
             }
         }
 
+        // Get distinct QTMs
+        System.out.println("Reading QTMs:");
+        List<String> qtms = getQTMs(swordTimeEntries);
+        Collections.sort(qtms);
+        qtms.remove(""); // remove horizontal activities
+        System.out.println(" - Total QTMs found: "+ qtms.size());
+
+        for (String qtm : qtms){
+            if (qtm!=null && !"".equals(qtm) ) {
+                System.out.println("-------------------------------------------------------------------------------------");
+                System.out.println("Budget card info for: " + qtm);
+                Map<String, Double> tpp = BudgetCardReporter.qtmTimePerPerson(qtm, swordTimeEntries);
+
+                double total = 0;
+                List<String> persons = new ArrayList<String>(tpp.keySet());
+                Collections.sort(persons);
+                NumberFormat formatter = new DecimalFormat("#0.00");
+                for (String person : persons) {
+
+                    System.out.println("   - " + String.format("%1$30s", person) + " - " + formatter.format(tpp.get(person)) + " hr - " + formatter.format(tpp.get(person) / 8) + " mdays");
+                    total += tpp.get(person);
+                }
+                System.out.println("     " + String.format("%1$30s", "TOTAL") + " - " + formatter.format(total) + " hr - " + formatter.format(total / 8) + " mdays");
+            }
+        }
+    }
+
+    private static List<String> getQTMs(List<SwordTimeEntry> swordTimeEntries) {
+        List<String> qtms = new ArrayList<String>();
+
+        for (SwordTimeEntry te: swordTimeEntries){
+            if (!qtms.contains(te.getActivity().getQtm_rfa())){
+                qtms.add(te.getActivity().getQtm_rfa());
+            }
+        }
+        return qtms;
     }
 
     private static Map<String, List<SwordTimeEntry>> getEmployeesMap(List<SwordTimeEntry> swordTimeEntries) {

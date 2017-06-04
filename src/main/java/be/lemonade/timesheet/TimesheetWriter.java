@@ -96,9 +96,17 @@ public class TimesheetWriter {
         String name = outputNameTemplate;
         name = name.replace("YYYY", String.format("%04d", year));
         name = name.replace("MM", String.format("%02d", month));
-        name = name.replace("NNNNN", employeeName.toUpperCase());
+        name = name.replace("NNNNN", formatEmployeeNameForFilename(employeeName));
         return name;
 
+
+    }
+
+    private static String formatEmployeeNameForFilename(String employeeName) {
+        String[] namePart = employeeName.split(",");
+        String lastname = namePart[0].trim().toUpperCase();
+        String name = namePart[1].trim();
+        return lastname+"_"+name;
 
     }
 

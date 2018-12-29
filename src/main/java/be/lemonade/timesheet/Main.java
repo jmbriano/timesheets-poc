@@ -2,7 +2,7 @@ package be.lemonade.timesheet;
 
 import be.lemonade.timesheet.model.ClientTimeEntry;
 import be.lemonade.timesheet.model.FreshbookTimeEntry;
-import be.lemonade.timesheet.model.SwordEmployee;
+import be.lemonade.timesheet.model.Employee;
 import be.lemonade.timesheet.util.ConfigurationReader;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
@@ -47,7 +47,7 @@ public class Main {
         for (String name : employees.keySet()){
             System.out.println("-------------------------------------------------------------------------------------");
             System.out.println("Creating timesheet for: "+ name.toUpperCase());
-            SwordEmployee employee = new SwordEmployee(name);
+            Employee employee = new Employee(name);
             for (ClientTimeEntry timeEntry : employees.get(name)){
                 employee.addSwordEntry(timeEntry);
             }

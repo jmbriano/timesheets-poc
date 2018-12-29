@@ -4,12 +4,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class SwordEmployee {
+public class Employee {
 
     private String name;
     private List<ClientTimeEntry> timeEntries;
 
-    public SwordEmployee(String inputName) {
+    public Employee(String inputName) {
         name = inputName;
         timeEntries = new ArrayList<ClientTimeEntry>();
     }

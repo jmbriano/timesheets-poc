@@ -28,13 +28,13 @@ public class TimeEntryTransformer {
             // Do nothing. keep default date format
         }
 
-        List<ClientTimeEntry> swordTimeEntryList = new ArrayList<ClientTimeEntry>();
+        List<ClientTimeEntry> clientTimeEntryList = new ArrayList<ClientTimeEntry>();
         try {
             List<MapperEntry> mappers = readMapEntries();
             for (FreshbookTimeEntry fte: timeEntries){
                 MapperEntry map = findMapper(mappers, fte.getMyClient(), fte.getMyProject(), fte.getMyTask());
                 if (map != null){
-                    swordTimeEntryList.add(
+                    clientTimeEntryList.add(
                             new ClientTimeEntry(
                                     fte.getMyPerson(),
                                     map.sw_project,
@@ -57,7 +57,7 @@ public class TimeEntryTransformer {
             throw new RuntimeException("ERROR: Can not transform the list. can not read mapper file: "+MAPPER_FILE_NAME);
         }
 
-        return swordTimeEntryList;
+        return clientTimeEntryList;
     }
 
     private static List<MapperEntry> readMapEntries() throws IOException {

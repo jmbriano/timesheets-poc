@@ -2,7 +2,7 @@ package be.lemonade.timesheet;
 
 import be.lemonade.timesheet.model.ActivityKey;
 import be.lemonade.timesheet.model.ClientTimeEntry;
-import be.lemonade.timesheet.model.SwordEmployee;
+import be.lemonade.timesheet.model.Employee;
 import be.lemonade.timesheet.util.ConfigurationReader;
 import be.lemonade.timesheet.util.DateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
@@ -20,7 +20,7 @@ public class TimesheetWriter {
     private static int SHEET_ID = 0;
 
     public static void main(String[] args) throws IOException, InvalidFormatException {
-        SwordEmployee employee = new SwordEmployee("Test user");
+        Employee employee = new Employee("Test user");
         employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
         employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
         employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
@@ -31,7 +31,7 @@ public class TimesheetWriter {
 
         write(employee);
 
-        SwordEmployee employee2 = new SwordEmployee("Test user2");
+        Employee employee2 = new Employee("Test user2");
         employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
         employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
         employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
@@ -44,7 +44,7 @@ public class TimesheetWriter {
 
     }
 
-    public static void write(SwordEmployee employee) throws IOException, InvalidFormatException {
+    public static void write(Employee employee) throws IOException, InvalidFormatException {
 
         ConfigurationReader conf = new ConfigurationReader();
         int month = Integer.parseInt(conf.getValue(ConfigurationReader.MONTH));
@@ -109,7 +109,7 @@ public class TimesheetWriter {
 
     }
 
-    private static void writeTimes(Row row, ActivityKey key, int month, int year, SwordEmployee employee, String format) {
+    private static void writeTimes(Row row, ActivityKey key, int month, int year, Employee employee, String format) {
         int firstDayColumn = CellReference.convertColStringToIndex("G");
 
         // Iterate each day and ask number of hours

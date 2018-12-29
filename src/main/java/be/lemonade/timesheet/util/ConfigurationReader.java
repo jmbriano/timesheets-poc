@@ -11,11 +11,6 @@ import java.util.Properties;
  */
 public class ConfigurationReader {
 
-    public static void main(String[] args) throws IOException {
-        ConfigurationReader reader = new ConfigurationReader();
-
-    }
-
     public static String RELEVANT_PROJECTS = "RELEVANT_PROJECTS";
     public static String FRESHBOOK_EXPORT_FILENAME = "FRESHBOOK_EXPORT_FILENAME";
     public static String TEMPLATE_FILENAME = "TEMPLATE_FILENAME";

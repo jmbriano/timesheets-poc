@@ -1,3 +1,4 @@
 .idea
 timesheets-poc.iml
 target/
+.DS_Store

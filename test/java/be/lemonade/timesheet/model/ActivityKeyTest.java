@@ -1,11 +1,9 @@
 package be.lemonade.timesheet.model;
 
-import be.lemonade.timesheet.FreshbookReportReader;
 import junit.framework.TestCase;
 import org.junit.Assert;
 
 import java.io.IOException;
-import java.util.List;
 
 public class ActivityKeyTest extends TestCase{
 

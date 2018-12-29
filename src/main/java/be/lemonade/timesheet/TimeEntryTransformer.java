@@ -1,7 +1,7 @@
 package be.lemonade.timesheet;
 
+import be.lemonade.timesheet.model.ClientTimeEntry;
 import be.lemonade.timesheet.model.FreshbookTimeEntry;
-import be.lemonade.timesheet.model.SwordTimeEntry;
 import be.lemonade.timesheet.util.ConfigurationReader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -20,7 +20,7 @@ public class TimeEntryTransformer {
     private static String MAPPER_FILE_NAME = "configuration/mapper.csv";
     private static String DATE_FORMAT = "MM/dd/yy";
 
-    public static List<SwordTimeEntry> transform (List<FreshbookTimeEntry> timeEntries) {
+    public static List<ClientTimeEntry> transform (List<FreshbookTimeEntry> timeEntries) {
         try {
             ConfigurationReader configurationReader = new ConfigurationReader();
             DATE_FORMAT = configurationReader.getValue(ConfigurationReader.FRESHBOOK_DATE_FORMAT);
@@ -28,14 +28,14 @@ public class TimeEntryTransformer {
             // Do nothing. keep default date format
         }
 
-        List<SwordTimeEntry> swordTimeEntryList = new ArrayList<SwordTimeEntry>();
+        List<ClientTimeEntry> swordTimeEntryList = new ArrayList<ClientTimeEntry>();
         try {
             List<MapperEntry> mappers = readMapEntries();
             for (FreshbookTimeEntry fte: timeEntries){
                 MapperEntry map = findMapper(mappers, fte.getMyClient(), fte.getMyProject(), fte.getMyTask());
                 if (map != null){
                     swordTimeEntryList.add(
-                            new SwordTimeEntry(
+                            new ClientTimeEntry(
                                     fte.getMyPerson(),
                                     map.sw_project,
                                     map.sw_sc,
@@ -115,7 +115,7 @@ public class TimeEntryTransformer {
         freshbookTimeEntries.add(new FreshbookTimeEntry("Juan","Client 2","IDP","Maintenance", "01/20/2017","8.30"));
         try {
 
-            List<SwordTimeEntry> transformedList = TimeEntryTransformer.transform(freshbookTimeEntries);
+            List<ClientTimeEntry> transformedList = TimeEntryTransformer.transform(freshbookTimeEntries);
             System.out.println(transformedList.size());
 
         } catch (RuntimeException e) {

@@ -7,11 +7,11 @@ import java.util.*;
 public class SwordEmployee {
 
     private String name;
-    private List<SwordTimeEntry> timeEntries;
+    private List<ClientTimeEntry> timeEntries;
 
     public SwordEmployee(String inputName) {
         name = inputName;
-        timeEntries = new ArrayList<SwordTimeEntry>();
+        timeEntries = new ArrayList<ClientTimeEntry>();
     }
 
     /**
@@ -19,7 +19,7 @@ public class SwordEmployee {
      *
      * @param timeEntry the Time entry to add to the list.
      */
-    public void addSwordEntry(SwordTimeEntry timeEntry) {
+    public void addSwordEntry(ClientTimeEntry timeEntry) {
         timeEntries.add(timeEntry);
     }
 
@@ -37,7 +37,7 @@ public class SwordEmployee {
     public List<ActivityKey> getAllTimeEntryKeys() {
         List<ActivityKey> allTimeEntryKeys = new ArrayList<ActivityKey>();
 
-        for (SwordTimeEntry currentEntry : timeEntries) {
+        for (ClientTimeEntry currentEntry : timeEntries) {
             if (!allTimeEntryKeys.contains(currentEntry.getActivity())) {
                 allTimeEntryKeys.add(currentEntry.getActivity());
             }
@@ -96,7 +96,7 @@ public class SwordEmployee {
         double activityTotal = 0;
         String inDate = parseDate(date);
 
-        for (SwordTimeEntry currentEntry : timeEntries) {
+        for (ClientTimeEntry currentEntry : timeEntries) {
             String currentDate = parseDate(currentEntry.getDate());
             if (inDate.equals(currentDate) && currentEntry.getActivity().equals(activity)) {
                 activityTotal += currentEntry.getTime_hs();

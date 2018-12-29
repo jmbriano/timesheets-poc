@@ -1,15 +1,14 @@
 package be.lemonade.timesheet;
 
 import be.lemonade.timesheet.model.ActivityKey;
+import be.lemonade.timesheet.model.ClientTimeEntry;
 import be.lemonade.timesheet.model.SwordEmployee;
-import be.lemonade.timesheet.model.SwordTimeEntry;
 import be.lemonade.timesheet.util.ConfigurationReader;
 import be.lemonade.timesheet.util.DateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
 import java.io.*;
 import java.util.Calendar;
@@ -22,24 +21,24 @@ public class TimesheetWriter {
 
     public static void main(String[] args) throws IOException, InvalidFormatException {
         SwordEmployee employee = new SwordEmployee("Test user");
-        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
-        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
-        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
-        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(4,4,2017),8));
-        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(5,4,2017),9));
-        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(1,4,2017),2));
-        employee.addSwordEntry(new SwordTimeEntry("Test user", "project1", "sc1", "qtm2", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),1));
+        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
+        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
+        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
+        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(4,4,2017),8));
+        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(5,4,2017),9));
+        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(1,4,2017),2));
+        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm2", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),1));
 
         write(employee);
 
         SwordEmployee employee2 = new SwordEmployee("Test user2");
-        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
-        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
-        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
-        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(4,4,2017),8));
-        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(5,4,2017),9));
-        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(1,4,2017),2));
-        employee2.addSwordEntry(new SwordTimeEntry("Test user2", "project1", "sc1", "qtm2", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),1));
+        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
+        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
+        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
+        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(4,4,2017),8));
+        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(5,4,2017),9));
+        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(1,4,2017),2));
+        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm2", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),1));
 
         write(employee2);
 

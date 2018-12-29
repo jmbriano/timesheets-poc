@@ -1,8 +1,8 @@
 package be.lemonade.timesheet;
 
+import be.lemonade.timesheet.model.ClientTimeEntry;
 import be.lemonade.timesheet.model.FreshbookTimeEntry;
 import be.lemonade.timesheet.model.SwordEmployee;
-import be.lemonade.timesheet.model.SwordTimeEntry;
 import be.lemonade.timesheet.util.ConfigurationReader;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
@@ -29,8 +29,8 @@ public class Main {
         List<FreshbookTimeEntry> filteredFreshbookTimeEntries = filterClients(freshbookTimeEntries, config.getValue(ConfigurationReader.RELEVANT_PROJECTS));
         System.out.println(" - Relevant entries found ("+config.getValue(ConfigurationReader.RELEVANT_PROJECTS)+"): "+filteredFreshbookTimeEntries.size());
 
-        // Map FreshbookTimeEntry to SwordTimeEntry
-        List<SwordTimeEntry> swordTimeEntries = null;
+        // Map FreshbookTimeEntry to ClientTimeEntry
+        List<ClientTimeEntry> swordTimeEntries = null;
         try {
             swordTimeEntries = TimeEntryTransformer.transform(filteredFreshbookTimeEntries);
         } catch (RuntimeException e){
@@ -41,14 +41,14 @@ public class Main {
 
         // Get distinct employees
         System.out.println("Reading employees:");
-        Map<String, List<SwordTimeEntry>> employees = getEmployeesMap(swordTimeEntries);
+        Map<String, List<ClientTimeEntry>> employees = getEmployeesMap(swordTimeEntries);
         System.out.println(" - Total employees found: "+employees.keySet().size());
 
         for (String name : employees.keySet()){
             System.out.println("-------------------------------------------------------------------------------------");
             System.out.println("Creating timesheet for: "+ name.toUpperCase());
             SwordEmployee employee = new SwordEmployee(name);
-            for (SwordTimeEntry timeEntry : employees.get(name)){
+            for (ClientTimeEntry timeEntry : employees.get(name)){
                 employee.addSwordEntry(timeEntry);
             }
 
@@ -87,10 +87,10 @@ public class Main {
         }
     }
 
-    private static List<String> getQTMs(List<SwordTimeEntry> swordTimeEntries) {
+    private static List<String> getQTMs(List<ClientTimeEntry> swordTimeEntries) {
         List<String> qtms = new ArrayList<String>();
 
-        for (SwordTimeEntry te: swordTimeEntries){
+        for (ClientTimeEntry te: swordTimeEntries){
             if (!qtms.contains(te.getActivity().getQtm_rfa())){
                 qtms.add(te.getActivity().getQtm_rfa());
             }
@@ -98,12 +98,12 @@ public class Main {
         return qtms;
     }
 
-    private static Map<String, List<SwordTimeEntry>> getEmployeesMap(List<SwordTimeEntry> swordTimeEntries) {
-        Map<String, List<SwordTimeEntry>> map = new HashMap<String, List<SwordTimeEntry>>();
+    private static Map<String, List<ClientTimeEntry>> getEmployeesMap(List<ClientTimeEntry> swordTimeEntries) {
+        Map<String, List<ClientTimeEntry>> map = new HashMap<String, List<ClientTimeEntry>>();
 
-        for (SwordTimeEntry te: swordTimeEntries){
+        for (ClientTimeEntry te: swordTimeEntries){
             if (!map.containsKey(te.getEmployee())){
-                map.put(te.getEmployee(),new ArrayList<SwordTimeEntry>());
+                map.put(te.getEmployee(),new ArrayList<ClientTimeEntry>());
             }
             map.get(te.getEmployee()).add(te);
         }

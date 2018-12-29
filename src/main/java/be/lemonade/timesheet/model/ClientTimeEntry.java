@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * This class works as a placeholder for elements
  */
-public class SwordTimeEntry {
+public class ClientTimeEntry {
 
     private Date date;
     private String employee;
@@ -13,7 +13,7 @@ public class SwordTimeEntry {
     private String task;
     private double time_hs;
 
-    public SwordTimeEntry(String employee, String project, String sc, String qtm, String ci, String wp, String task, Date date, double hs){
+    public ClientTimeEntry(String employee, String project, String sc, String qtm, String ci, String wp, String task, Date date, double hs){
         this.employee = employee;
         this.activity = new ActivityKey(project,sc,qtm,ci,wp);
         this.task = task;

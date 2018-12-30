@@ -57,6 +57,7 @@
                         <goal>single</goal>
                     </goals>
                     <configuration>
+                        <outputDirectory>${project.basedir}/runtime</outputDirectory>
                         <archive>
                         <manifest>
                             <mainClass>

@@ -1,18 +1,18 @@
 package be.lemonade.timesheet.util;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * Created by nemo on 5/1/17.
- */
 public class ConfigurationReader {
 
+    public static String DATA_SOURCE = "DATA_SOURCE";
     public static String RELEVANT_PROJECTS = "RELEVANT_PROJECTS";
     public static String FRESHBOOK_EXPORT_FILENAME = "FRESHBOOK_EXPORT_FILENAME";
+    public static String FRESHBOOK_API_URL = "FRESHBOOK_API_URL";
+    public static String FRESHBOOK_API_TOKEN = "FRESHBOOK_API_TOKEN";
+    public static String FRESHBOOK_OUTPUT_CSV_NAME = "FRESHBOOK_OUTPUT_CSV_NAME";
     public static String TEMPLATE_FILENAME = "TEMPLATE_FILENAME";
     public static String OUTPUT_FILENAME = "OUTPUT_FILENAME";
     public static String OUTPUT_DIR = "OUTPUT_DIR";

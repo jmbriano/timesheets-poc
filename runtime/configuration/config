@@ -2,8 +2,11 @@
 # Monthly properties
 OUTPUT_FILENAME=YYYY-MM SWORD TS NNNNN (DEF).xlsx
 
-MONTH=03
-YEAR=2017
+# DATA_SOURCE can either be CSV or ONLINE. If ONLINE, it will extract the whole month from Freshbook directly.
+DATA_SOURCE=ONLINE
+
+MONTH=12
+YEAR=2018
 
 #Possible split modes:
 # reality: Hours are loaded in the day they were actually worked
@@ -33,6 +36,10 @@ TEMPLATE_FILENAME=TEMPLATE.xlsx
 RELEVANT_PROJECTS=Client 1
 FRESHBOOK_DATE_FORMAT=MM/dd/yy
 OUTPUT_DIR=output/
+FRESHBOOK_API_URL=https://**********.freshbooks.com/api/2.1/xml-in
+FRESHBOOK_API_TOKEN=***********
+FRESHBOOK_OUTPUT_CSV_NAME=generated-input.csv
+
 
 # Template properties
 FIRST_PROJECT_ROW=6

@@ -10,13 +10,13 @@ import java.util.List;
 public class FreshbookReportReaderTest extends TestCase{
 
     public void testParseRecords() throws IOException {
-        FreshbookReportReader frr = new FreshbookReportReader();
+        FreshbookCSVReader frr = new FreshbookCSVReader();
         List<FreshbookTimeEntry> timeEntryList = frr.parseRecords("runtime/input.csv");
         Assert.assertTrue(timeEntryList.get(0).getMyPerson().contains("LastName, Name 1"));
     }
 
     public void testParseRecordsSize() throws IOException{
-        FreshbookReportReader frr = new FreshbookReportReader();
+        FreshbookCSVReader frr = new FreshbookCSVReader();
         List<FreshbookTimeEntry> timeEntryList = frr.parseRecords("runtime/input.csv");
         Assert.assertTrue(timeEntryList.size() == 104);
     }

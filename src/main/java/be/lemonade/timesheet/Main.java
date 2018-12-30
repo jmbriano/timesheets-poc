@@ -5,15 +5,14 @@ import be.lemonade.timesheet.model.FreshbookTimeEntry;
 import be.lemonade.timesheet.model.Employee;
 import be.lemonade.timesheet.model.exceptions.MissingMapperEntryException;
 import be.lemonade.timesheet.util.ConfigurationReader;
+import be.lemonade.timesheet.util.DateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.*;
 
 public class Main {
@@ -23,11 +22,36 @@ public class Main {
         ConfigurationReader config = new ConfigurationReader();
 
         try {
-            println("Reading freshbook export:");
-            List<FreshbookTimeEntry> freshbookTimeEntries = FreshbookReportReader.parseRecords(config.getValue(ConfigurationReader.FRESHBOOK_EXPORT_FILENAME));
+
+            List<FreshbookTimeEntry> freshbookTimeEntries;
+
+            String source = config.getValue(ConfigurationReader.DATA_SOURCE);
+            if ("ONLINE".equalsIgnoreCase(source)){
+                println("Reading freshbook directly from: " + config.getValue(ConfigurationReader.FRESHBOOK_API_URL));
+                FreshbookOnlineReader onlineLoader = new FreshbookOnlineReader(
+                        config.getValue(ConfigurationReader.FRESHBOOK_API_URL),
+                        config.getValue(ConfigurationReader.FRESHBOOK_API_TOKEN),
+                        true,
+                        config.getValue(ConfigurationReader.OUTPUT_DIR)+config.getValue(ConfigurationReader.FRESHBOOK_OUTPUT_CSV_NAME));
+
+                Integer month = Integer.parseInt(config.getValue(ConfigurationReader.MONTH));
+                Integer year = Integer.parseInt(config.getValue(ConfigurationReader.YEAR));
+                Date from = DateUtil.createDate(1,month, year);
+                Date to = DateUtil.getLastDateOfMonth(from);
+
+                freshbookTimeEntries = onlineLoader.parseRecords(from,to);
+
+            } else if ("CSV".equalsIgnoreCase(source)){
+                println("Reading freshbook records from CSV file: "+ config.getValue(ConfigurationReader.FRESHBOOK_EXPORT_FILENAME));
+                freshbookTimeEntries = FreshbookCSVReader.parseRecords(config.getValue(ConfigurationReader.FRESHBOOK_EXPORT_FILENAME));
+
+            } else {
+                System.out.println("ERROR: DATA_SOURCE should be either ONLINE or CSV");
+                return;
+            }
             println(" - Total entries found: "+freshbookTimeEntries.size());
 
-            // filter sword entries
+            // filter relevant entries
             List<FreshbookTimeEntry> filteredFreshbookTimeEntries = filterClients(freshbookTimeEntries, config.getValue(ConfigurationReader.RELEVANT_PROJECTS));
             println(" - Relevant entries found ("+config.getValue(ConfigurationReader.RELEVANT_PROJECTS)+"): "+filteredFreshbookTimeEntries.size());
             println();
@@ -46,6 +70,12 @@ public class Main {
 
             println(e.getMessage(), outputFileName);
 
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
         } catch (RuntimeException e){
             println(e.getMessage());
         }

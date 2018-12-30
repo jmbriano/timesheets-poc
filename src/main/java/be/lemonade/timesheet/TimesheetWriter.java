@@ -19,31 +19,6 @@ public class TimesheetWriter {
 
     private static int SHEET_ID = 0;
 
-    public static void main(String[] args) throws IOException, InvalidFormatException {
-        Employee employee = new Employee("Test user");
-        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
-        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
-        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
-        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(4,4,2017),8));
-        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(5,4,2017),9));
-        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(1,4,2017),2));
-        employee.addSwordEntry(new ClientTimeEntry("Test user", "project1", "sc1", "qtm2", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),1));
-
-        write(employee);
-
-        Employee employee2 = new Employee("Test user2");
-        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),5));
-        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(2,4,2017),6));
-        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp1", "task1", DateUtil.createDate(3,4,2017),7));
-        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(4,4,2017),8));
-        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(5,4,2017),9));
-        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm1", "ci1", "wp2", "task1", DateUtil.createDate(1,4,2017),2));
-        employee2.addSwordEntry(new ClientTimeEntry("Test user2", "project1", "sc1", "qtm2", "ci1", "wp1", "task1", DateUtil.createDate(1,4,2017),1));
-
-        write(employee2);
-
-    }
-
     public static void write(Employee employee) throws IOException, InvalidFormatException {
 
         ConfigurationReader conf = new ConfigurationReader();
@@ -53,12 +28,13 @@ public class TimesheetWriter {
         String format = conf.getValue(ConfigurationReader.HOURS_FORMAT);
         String templateFileName = conf.getValue(ConfigurationReader.TEMPLATE_FILENAME);
         String outputNameTemplate = conf.getValue(ConfigurationReader.OUTPUT_FILENAME);
+        String outputDirectory = conf.getValue(ConfigurationReader.OUTPUT_DIR);
 
         String employeeName = employee.getName();
 
         // Open template XLS
-        InputStream inp = new FileInputStream(templateFileName);
-        Workbook wb = WorkbookFactory.create(inp);
+        InputStream templateFile = new FileInputStream(templateFileName);
+        Workbook wb = WorkbookFactory.create(templateFile);
 
         Sheet sheet = wb.getSheetAt(SHEET_ID);
 
@@ -86,7 +62,7 @@ public class TimesheetWriter {
         // Write output file
         String filename = createOutputFilename(year, month, employeeName, outputNameTemplate);
         System.out.println("  Created file: "+ filename);
-        FileOutputStream fileOut = new FileOutputStream(filename);
+        FileOutputStream fileOut = new FileOutputStream(outputDirectory+filename);
         wb.write(fileOut);
         fileOut.close();
     }

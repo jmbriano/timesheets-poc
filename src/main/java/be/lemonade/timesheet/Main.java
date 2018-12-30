@@ -3,51 +3,93 @@ package be.lemonade.timesheet;
 import be.lemonade.timesheet.model.ClientTimeEntry;
 import be.lemonade.timesheet.model.FreshbookTimeEntry;
 import be.lemonade.timesheet.model.Employee;
+import be.lemonade.timesheet.model.exceptions.MissingMapperEntryException;
 import be.lemonade.timesheet.util.ConfigurationReader;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * Created by nemo on 5/1/17.
- */
 public class Main {
 
     public static void main(String[] args) throws IOException {
 
         ConfigurationReader config = new ConfigurationReader();
 
-        // Read input file
-        System.out.println("Reading freshbook export:");
-        List<FreshbookTimeEntry> freshbookTimeEntries = FreshbookReportReader.parseRecords(config.getValue(ConfigurationReader.FRESHBOOK_EXPORT_FILENAME));
-        System.out.println(" - Total entries found: "+freshbookTimeEntries.size());
-
-        // filter sword entries
-        List<FreshbookTimeEntry> filteredFreshbookTimeEntries = filterClients(freshbookTimeEntries, config.getValue(ConfigurationReader.RELEVANT_PROJECTS));
-        System.out.println(" - Relevant entries found ("+config.getValue(ConfigurationReader.RELEVANT_PROJECTS)+"): "+filteredFreshbookTimeEntries.size());
-        System.out.println();
-
-        // Map FreshbookTimeEntry to ClientTimeEntry
-        List<ClientTimeEntry> swordTimeEntries;
         try {
+            println("Reading freshbook export:");
+            List<FreshbookTimeEntry> freshbookTimeEntries = FreshbookReportReader.parseRecords(config.getValue(ConfigurationReader.FRESHBOOK_EXPORT_FILENAME));
+            println(" - Total entries found: "+freshbookTimeEntries.size());
+
+            // filter sword entries
+            List<FreshbookTimeEntry> filteredFreshbookTimeEntries = filterClients(freshbookTimeEntries, config.getValue(ConfigurationReader.RELEVANT_PROJECTS));
+            println(" - Relevant entries found ("+config.getValue(ConfigurationReader.RELEVANT_PROJECTS)+"): "+filteredFreshbookTimeEntries.size());
+            println();
+
+            List<ClientTimeEntry> swordTimeEntries;
+
             swordTimeEntries = TimeEntryTransformer.transform(filteredFreshbookTimeEntries);
+
+            createTimesheets(swordTimeEntries);
+
+            generateBudgetCardsSummary(config, swordTimeEntries);
+
+        } catch (MissingMapperEntryException e){
+
+            String outputFileName = buildMissingMapperOutputFilename(config);
+
+            println(e.getMessage(), outputFileName);
+
         } catch (RuntimeException e){
-            System.out.println(e.getMessage());
-            return;
+            println(e.getMessage());
         }
 
+    }
 
+    private static void generateBudgetCardsSummary(ConfigurationReader config, List<ClientTimeEntry> swordTimeEntries) {
+        String outputFileName = buildBudgetCardOutputFilename(config);
+
+        println("Reading QTMs:", outputFileName);
+        List<String> qtms = getQTMs(swordTimeEntries);
+        Collections.sort(qtms);
+        qtms.remove(""); // remove horizontal activities
+        println(" - Total QTMs found: "+ qtms.size(), outputFileName);
+
+        for (String qtm : qtms){
+            if (qtm!=null && !"".equals(qtm) ) {
+                println("-------------------------------------------------------------------------------------", outputFileName);
+                println("Budget card info for: " + qtm, outputFileName);
+                Map<String, Double> tpp = BudgetCardReporter.qtmTimePerPerson(qtm, swordTimeEntries);
+
+                double total = 0;
+                List<String> persons = new ArrayList<String>(tpp.keySet());
+                Collections.sort(persons);
+                NumberFormat formatter = new DecimalFormat("#0.00");
+                for (String person : persons) {
+
+                    println("   - " + String.format("%1$30s", person) + " - " + formatter.format(tpp.get(person)) + " hr - " + formatter.format(tpp.get(person) / 8) + " mdays", outputFileName);
+                    total += tpp.get(person);
+                }
+                println("     " + String.format("%1$30s", "TOTAL") + " - " + formatter.format(total) + " hr - " + formatter.format(total / 8) + " mdays", outputFileName);
+            }
+        }
+    }
+
+    private static void createTimesheets(List<ClientTimeEntry> swordTimeEntries) throws IOException {
         // Get distinct employees
-        System.out.println("Reading employees:");
+        println("Reading employees:");
         Map<String, List<ClientTimeEntry>> employees = getEmployeesMap(swordTimeEntries);
-        System.out.println(" - Total employees found: "+employees.keySet().size());
+        println(" - Total employees found: "+employees.keySet().size());
 
         for (String name : employees.keySet()){
-            System.out.println("-------------------------------------------------------------------------------------");
-            System.out.println("Creating timesheet for: "+ name.toUpperCase());
+            println("-------------------------------------------------------------------------------------");
+            println("Creating timesheet for: "+ name.toUpperCase());
             Employee employee = new Employee(name);
             for (ClientTimeEntry timeEntry : employees.get(name)){
                 employee.addSwordEntry(timeEntry);
@@ -60,33 +102,25 @@ public class Main {
                 e.printStackTrace();
             }
         }
-
-        // Get distinct QTMs
-        System.out.println("Reading QTMs:");
-        List<String> qtms = getQTMs(swordTimeEntries);
-        Collections.sort(qtms);
-        qtms.remove(""); // remove horizontal activities
-        System.out.println(" - Total QTMs found: "+ qtms.size());
-
-        for (String qtm : qtms){
-            if (qtm!=null && !"".equals(qtm) ) {
-                System.out.println("-------------------------------------------------------------------------------------");
-                System.out.println("Budget card info for: " + qtm);
-                Map<String, Double> tpp = BudgetCardReporter.qtmTimePerPerson(qtm, swordTimeEntries);
-
-                double total = 0;
-                List<String> persons = new ArrayList<String>(tpp.keySet());
-                Collections.sort(persons);
-                NumberFormat formatter = new DecimalFormat("#0.00");
-                for (String person : persons) {
-
-                    System.out.println("   - " + String.format("%1$30s", person) + " - " + formatter.format(tpp.get(person)) + " hr - " + formatter.format(tpp.get(person) / 8) + " mdays");
-                    total += tpp.get(person);
-                }
-                System.out.println("     " + String.format("%1$30s", "TOTAL") + " - " + formatter.format(total) + " hr - " + formatter.format(total / 8) + " mdays");
-            }
-        }
     }
+
+    private static String buildBudgetCardOutputFilename(ConfigurationReader config) {
+        String outputFileName;
+        String outputDir = config.getValue(ConfigurationReader.OUTPUT_DIR);
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
+        String timestamp = df.format(new Date());
+        outputFileName = outputDir+"BudgetCardOutput-"+timestamp+".txt";
+        return outputFileName;
+    }
+
+    private static String buildMissingMapperOutputFilename(ConfigurationReader config) {
+        String outputFileName;
+        String outputDir = config.getValue(ConfigurationReader.OUTPUT_DIR);
+        outputFileName = outputDir+"MapperErrors.txt";
+        return outputFileName;
+    }
+
+
 
     private static List<String> getQTMs(List<ClientTimeEntry> swordTimeEntries) {
         List<String> qtms = new ArrayList<String>();
@@ -120,5 +154,33 @@ public class Main {
             }
         }
         return filtered;
+    }
+
+    private static void println(){
+        println("", null);
+    }
+
+    private static void println(String line){
+        println(line, null);
+    }
+
+    private static void println(String line, String filename ){
+        System.out.println(line);
+        if (filename != null){
+            try{
+                writeToFile(line, filename);
+            } catch (IOException e) {
+                System.out.println("ERROR: Can not write in "+ filename);
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    public static void writeToFile(String line, String filename) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true));
+        writer.append(line);
+        writer.append("\n");
+        writer.close();
     }
 }

@@ -2,6 +2,7 @@ package be.lemonade.timesheet;
 
 import be.lemonade.timesheet.model.ClientTimeEntry;
 import be.lemonade.timesheet.model.FreshbookTimeEntry;
+import be.lemonade.timesheet.model.exceptions.MissingMapperEntryException;
 import be.lemonade.timesheet.util.ConfigurationReader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -55,7 +56,7 @@ public class TimeEntryTransformer {
 
             if (!missingMapperEntries.keySet().isEmpty()){
 
-                throw new RuntimeException(getStringError(missingMapperEntries));
+                throw new MissingMapperEntryException(getStringError(missingMapperEntries));
             }
         } catch (ParseException e){
             throw new RuntimeException("ERROR: Can not transform the list. Invalid date found. Date should have format: "+DATE_FORMAT);

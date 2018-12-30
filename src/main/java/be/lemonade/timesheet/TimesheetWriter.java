@@ -55,7 +55,10 @@ public class TimesheetWriter {
                 writeTimesPerDay(sheet.getRow(rowIndex), key, month, year, employee, format);
             } else if ("evenly".equalsIgnoreCase(splitMode)){
                     writeTimesEvenly(sheet.getRow(rowIndex), key, month, year, employee, format);
-            } else {
+            } else if ("provisional".equalsIgnoreCase(splitMode)){
+                boolean expand = "YES".equalsIgnoreCase(conf.getValue(ConfigurationReader.EXPAND));
+                writeProvisionalTimes(sheet.getRow(rowIndex), key, month, year, employee, format, expand);
+            }else {
                 throw new RuntimeException("Invalid SPLIT_MODE found in configuration file: ("+splitMode+"). Options are: [reality|evenly]");
             }
             rowIndex++;
@@ -102,16 +105,8 @@ public class TimesheetWriter {
             // Write value in cell (only if bigger than 0)
             if (hours > 0) {
 
-                Cell cell = row.getCell(firstDayColumn + day - 1);
-                if (cell == null)
-                    cell = row.createCell(firstDayColumn + day - 1);
-
-                CellStyle style = cell.getCellStyle();
-                style.setDataFormat(row.getSheet().getWorkbook().createDataFormat().getFormat(format));
-
-                cell.setCellType(CellType.NUMERIC);
-                cell.setCellStyle(style);
-                cell.setCellValue(hours);
+                int cellNum = firstDayColumn + day - 1;
+                writeValueInCell(row, cellNum, hours, format);
 
             }
         }
@@ -134,19 +129,59 @@ public class TimesheetWriter {
             cal.setTime(date);
             if (hoursPerDay > 0 && cal.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && cal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
 
-                Cell cell = row.getCell(firstDayColumn + day - 1);
-                if (cell == null)
-                    cell = row.createCell(firstDayColumn + day - 1);
-
-                CellStyle style = cell.getCellStyle();
-                style.setDataFormat(row.getSheet().getWorkbook().createDataFormat().getFormat(format));
-
-                cell.setCellType(CellType.NUMERIC);
-                cell.setCellStyle(style);
-                cell.setCellValue(hoursPerDay);
+                int cellNum = firstDayColumn + day - 1;
+                writeValueInCell(row, cellNum, hoursPerDay, format);
 
             }
         }
+    }
+
+    private static void writeProvisionalTimes(Row row, ActivityKey key, int month, int year, Employee employee, String format, boolean expand) {
+        int firstDayColumn = CellReference.convertColStringToIndex("G");
+
+        double totalHoursInActivity = employee.getTotalTimeForActivity(key);
+
+        if (totalHoursInActivity<=0)
+            return;
+
+        Calendar cal = Calendar.getInstance();
+
+        if (expand){
+
+            double totalHoursForEmployee = employee.getTotalTime();
+            int workingDaysInMonth = getWeekDaysInMonth(month,year);
+            double targetWorkingHoursInMonth = workingDaysInMonth * 8;
+
+            totalHoursInActivity = totalHoursInActivity * (targetWorkingHoursInMonth/totalHoursForEmployee);
+
+        }
+
+        int day = 1;
+        Date date = DateUtil.createDate(day, month, year);
+        cal.setTime(date);
+
+        while (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+            day++;
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+        int cellNum = firstDayColumn + day - 1;
+
+        writeValueInCell(row, cellNum, totalHoursInActivity, format);
+
+    }
+
+    private static void writeValueInCell(Row row, int cellNum, double totalHoursInActivity, String format) {
+        Cell cell = row.getCell(cellNum);
+        if (cell == null)
+            cell = row.createCell(cellNum);
+
+        CellStyle style = cell.getCellStyle();
+        style.setDataFormat(row.getSheet().getWorkbook().createDataFormat().getFormat(format));
+
+        cell.setCellType(CellType.NUMERIC);
+        cell.setCellStyle(style);
+        cell.setCellValue(totalHoursInActivity);
     }
 
     private static void writeRowHeader(Sheet sheet, int rowIndex, ActivityKey key) {

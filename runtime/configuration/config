@@ -6,11 +6,17 @@ MONTH=03
 YEAR=2017
 
 #Possible split modes:
-# reality: hours are loaded in the day they were actually worked
+# reality: Hours are loaded in the day they were actually worked
 # evenly: The total hours for the row are split evenly in all working days
-SPLIT_MODE=evenly
+# provisional: The total hours will be recorded in the first week day. See EXPAND definition below.
+SPLIT_MODE=provisional
 
-HOURS_FORMAT=0.00
+# EXPAND is only used if SPLIT_MODE=provisional.
+If EXPAND=YES then the actual totals will be linearly extrapolated to the whole month. Otherwise no extrapolation will occur.
+EXPAND=YES
+
+# HOURS_FORMAT=0 will show only the integer part (no decimals). HOURS_FORMAT=0.00 will show two decimals
+HOURS_FORMAT=0
 
 # Runtime properties
 FRESHBOOK_EXPORT_FILENAME=input.csv

@@ -17,6 +17,7 @@ public class ConfigurationReader {
     public static String OUTPUT_FILENAME = "OUTPUT_FILENAME";
     public static String OUTPUT_DIR = "OUTPUT_DIR";
     public static String SPLIT_MODE = "SPLIT_MODE";
+    public static String EXPAND = "EXPAND";
     public static String MONTH = "MONTH";
     public static String YEAR = "YEAR";
     public static String FRESHBOOK_DATE_FORMAT = "FRESHBOOK_DATE_FORMAT";

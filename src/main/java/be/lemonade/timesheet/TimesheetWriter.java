@@ -18,12 +18,17 @@ public class TimesheetWriter {
 
     private static int SHEET_ID = 0;
 
+    private static String SPLIT_EVENLY = "evenly";
+    private static String SPLIT_REALITY = "reality";
+    private static String SPLIT_PROVISIONAL = "provisional";
+
     public static void write(Employee employee) throws IOException, InvalidFormatException {
 
         ConfigurationReader conf = new ConfigurationReader();
         int month = Integer.parseInt(conf.getValue(ConfigurationReader.MONTH));
         int year = Integer.parseInt(conf.getValue(ConfigurationReader.YEAR));
         int firstRowWithEntries = Integer.parseInt(conf.getValue(ConfigurationReader.FIRST_PROJECT_ROW))-1;
+        String firstColumnWithDate = conf.getValue(ConfigurationReader.FIRST_DATE_COLUMN);
         String format = conf.getValue(ConfigurationReader.HOURS_FORMAT);
         String templateFileName = conf.getValue(ConfigurationReader.TEMPLATE_FILENAME);
         String outputNameTemplate = conf.getValue(ConfigurationReader.OUTPUT_FILENAME);
@@ -42,6 +47,16 @@ public class TimesheetWriter {
         writeEmployeeName(sheet, employeeName);
         writeTimesheetDate(sheet, DateUtil.createDate(1,month,year));
 
+        if (SPLIT_PROVISIONAL.equalsIgnoreCase(splitMode)){
+            int tagRow = Integer.parseInt(conf.getValue(ConfigurationReader.FORECAST_TAG_ROW));
+
+            int day = getFirstWorkingDayOfMonth(month, year);
+            int firstDayColumn = CellReference.convertColStringToIndex(firstColumnWithDate);
+
+            int cellNum = firstDayColumn + day - 1;
+            writeForecasteTag(sheet,tagRow,cellNum,"Forecast");
+        }
+
         // Get unique Activity list
         List<ActivityKey> allKeys = employee.getAllTimeEntryKeys();
 
@@ -51,13 +66,13 @@ public class TimesheetWriter {
         for (ActivityKey key : allKeys) {
 
             writeRowHeader(sheet, rowIndex,key);
-            if ("reality".equalsIgnoreCase(splitMode)) {
-                writeTimesPerDay(sheet.getRow(rowIndex), key, month, year, employee, format);
-            } else if ("evenly".equalsIgnoreCase(splitMode)){
-                    writeTimesEvenly(sheet.getRow(rowIndex), key, month, year, employee, format);
-            } else if ("provisional".equalsIgnoreCase(splitMode)){
+            if (SPLIT_REALITY.equalsIgnoreCase(splitMode)) {
+                writeTimesPerDay(sheet.getRow(rowIndex),firstColumnWithDate, key, month, year, employee, format);
+            } else if (SPLIT_EVENLY.equalsIgnoreCase(splitMode)){
+                    writeTimesEvenly(sheet.getRow(rowIndex), firstColumnWithDate, key, month, year, employee, format);
+            } else if (SPLIT_PROVISIONAL.equalsIgnoreCase(splitMode)){
                 boolean expand = "YES".equalsIgnoreCase(conf.getValue(ConfigurationReader.EXPAND));
-                writeProvisionalTimes(sheet.getRow(rowIndex), key, month, year, employee, format, expand);
+                writeProvisionalTimes(sheet.getRow(rowIndex), firstColumnWithDate, key, month, year, employee, format, expand);
             }else {
                 throw new RuntimeException("Invalid SPLIT_MODE found in configuration file: ("+splitMode+"). Options are: [reality|evenly]");
             }
@@ -93,8 +108,9 @@ public class TimesheetWriter {
 
     }
 
-    private static void writeTimesPerDay(Row row, ActivityKey key, int month, int year, Employee employee, String format) {
-        int firstDayColumn = CellReference.convertColStringToIndex("G");
+    private static void writeTimesPerDay(Row row, String columnName, ActivityKey key, int month, int year, Employee employee, String format) {
+
+        int firstDayColumn = CellReference.convertColStringToIndex(columnName);
 
         // Iterate each day and ask number of hours
         for (int day = 1; day <= lastDayOfMonth(month, year); day++) {
@@ -112,8 +128,8 @@ public class TimesheetWriter {
         }
     }
 
-    private static void writeTimesEvenly(Row row, ActivityKey key, int month, int year, Employee employee, String format) {
-        int firstDayColumn = CellReference.convertColStringToIndex("G");
+    private static void writeTimesEvenly(Row row, String columnName, ActivityKey key, int month, int year, Employee employee, String format) {
+        int firstDayColumn = CellReference.convertColStringToIndex(columnName);
 
         double totalTimeForActivity = employee.getTotalTimeForActivity(key);
         int workingDaysInMonth = getWeekDaysInMonth(month,year);
@@ -136,15 +152,15 @@ public class TimesheetWriter {
         }
     }
 
-    private static void writeProvisionalTimes(Row row, ActivityKey key, int month, int year, Employee employee, String format, boolean expand) {
-        int firstDayColumn = CellReference.convertColStringToIndex("G");
+    private static void writeProvisionalTimes(Row row, String columnName, ActivityKey key, int month, int year, Employee employee, String format, boolean expand) {
+        int firstDayColumn = CellReference.convertColStringToIndex(columnName);
 
         double totalHoursInActivity = employee.getTotalTimeForActivity(key);
 
         if (totalHoursInActivity<=0)
             return;
 
-        Calendar cal = Calendar.getInstance();
+
 
         if (expand){
 
@@ -156,6 +172,16 @@ public class TimesheetWriter {
 
         }
 
+        int day = getFirstWorkingDayOfMonth(month, year);
+
+        int cellNum = firstDayColumn + day - 1;
+
+        writeValueInCell(row, cellNum, totalHoursInActivity, format);
+
+    }
+
+    private static int getFirstWorkingDayOfMonth(int month, int year) {
+        Calendar cal = Calendar.getInstance();
         int day = 1;
         Date date = DateUtil.createDate(day, month, year);
         cal.setTime(date);
@@ -164,11 +190,7 @@ public class TimesheetWriter {
             day++;
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
-
-        int cellNum = firstDayColumn + day - 1;
-
-        writeValueInCell(row, cellNum, totalHoursInActivity, format);
-
+        return day;
     }
 
     private static void writeValueInCell(Row row, int cellNum, double totalHoursInActivity, String format) {
@@ -222,6 +244,18 @@ public class TimesheetWriter {
             cell = row.createCell(CellReference.convertColStringToIndex("P"));
         cell.setCellType(CellType.STRING);
         cell.setCellValue(name);
+    }
+
+    private static void writeForecasteTag(Sheet sheet, int rowIndex, int colIndex, String text) {
+        Row row = sheet.getRow(rowIndex);
+        Cell cell = row.getCell(colIndex);
+        if (cell == null)
+            cell = row.createCell(colIndex);
+        cell.setCellType(CellType.STRING);
+        cell.setCellValue(text);
+        cell.getCellStyle().setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+        cell.getCellStyle().setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        cell.getCellStyle().setRotation((short)-90);
     }
 
     private static int lastDayOfMonth(int month, int year) {

@@ -22,7 +22,9 @@ public class ConfigurationReader {
     public static String YEAR = "YEAR";
     public static String FRESHBOOK_DATE_FORMAT = "FRESHBOOK_DATE_FORMAT";
     public static String FIRST_PROJECT_ROW = "FIRST_PROJECT_ROW";
+    public static String FIRST_DATE_COLUMN = "FIRST_DATE_COLUMN";
     public static String HOURS_FORMAT = "HOURS_FORMAT";
+    public static String FORECAST_TAG_ROW = "FORECAST_TAG_ROW";
 
     private Properties properties;
 

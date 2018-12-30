@@ -27,6 +27,8 @@ OUTPUT_DIR=output/
 
 # Template properties
 FIRST_PROJECT_ROW=6
+FIRST_DATE_COLUMN=G
+FORECAST_TAG_ROW=17
 
 
 

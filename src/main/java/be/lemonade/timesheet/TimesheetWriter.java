@@ -66,6 +66,13 @@ public class TimesheetWriter {
         for (ActivityKey key : allKeys) {
 
             writeRowHeader(sheet, rowIndex,key);
+
+            String description = getDescriptionForKey(conf, key);
+
+            if(description != null ){
+                writeRowDescription(sheet, rowIndex,description);
+            }
+
             if (SPLIT_REALITY.equalsIgnoreCase(splitMode)) {
                 writeTimesPerDay(sheet.getRow(rowIndex),firstColumnWithDate, key, month, year, employee, format);
             } else if (SPLIT_EVENLY.equalsIgnoreCase(splitMode)){
@@ -88,6 +95,30 @@ public class TimesheetWriter {
         FileOutputStream fileOut = new FileOutputStream(outputDirectory+filename);
         wb.write(fileOut);
         fileOut.close();
+    }
+
+    private static String getDescriptionForKey(ConfigurationReader conf, ActivityKey key) {
+        String description;
+        String descriptionKey;
+
+        descriptionKey = (key.getWp()).toUpperCase();
+        description = conf.getValue(descriptionKey);
+
+        descriptionKey = (key.getCI()+"_"+key.getWp()).toUpperCase();
+        if (conf.getValue(descriptionKey) != null){
+            description = conf.getValue(descriptionKey);
+        }
+
+        descriptionKey = (key.getQtm_rfa()+"_"+key.getCI()+"_"+key.getWp()).toUpperCase();
+        if (conf.getValue(descriptionKey) != null){
+            description = conf.getValue(descriptionKey);
+        }
+
+        descriptionKey = (key.getSpecificContract()+"_"+key.getQtm_rfa()+"_"+key.getCI()+"_"+key.getWp()).toUpperCase();
+        if (conf.getValue(descriptionKey) != null){
+            description = conf.getValue(descriptionKey);
+        }
+        return description;
     }
 
     private static String createOutputFilename(int year, int month, String employeeName, String outputNameTemplate) {
@@ -212,6 +243,10 @@ public class TimesheetWriter {
         writeStringInCell(sheet, rowIndex,CellReference.convertColStringToIndex("C"),key.getQtm_rfa());
         writeStringInCell(sheet, rowIndex,CellReference.convertColStringToIndex("D"),key.getCI());
         writeStringInCell(sheet, rowIndex,CellReference.convertColStringToIndex("E"),key.getWp());
+    }
+
+    private static void writeRowDescription(Sheet sheet, int rowIndex, String description) {
+        writeStringInCell(sheet, rowIndex,CellReference.convertColStringToIndex("F"), description);
     }
 
     private static void writeStringInCell(Sheet sheet, int rowIndex, int colIndex, String text) {

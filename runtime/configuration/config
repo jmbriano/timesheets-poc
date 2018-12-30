@@ -15,8 +15,17 @@ SPLIT_MODE=provisional
 If EXPAND=YES then the actual totals will be linearly extrapolated to the whole month. Otherwise no extrapolation will occur.
 EXPAND=YES
 
+# If you need to add a common description to all the timesheets, it can be added here. The tool will look for a combination of SC_RFA_CI_WP (values concatenated with '_'). It will use the most precise one.
+# Examples:
+# WP.8.1.1=A,B,C will add "A,B,C" to every row that contains WP.8.1.1
+# PROJA_WP.8.1.1=D,E,F will add "D,E,F" to every row that contains WP.8.1.1 and PROJA as CI.
+
+PROJ_1_WP.8.1.1= This is the description for row with PROJ_1 and WP.8.1.1
+SC1_QTM3_PROJ_1_WP3=This is the description for row with SC1, QTM3, PROJ_1 and WP3
+WP3=This is the description for rows with WP3
+
 # HOURS_FORMAT=0 will show only the integer part (no decimals). HOURS_FORMAT=0.00 will show two decimals
-HOURS_FORMAT=0
+HOURS_FORMAT=0.00
 
 # Runtime properties
 FRESHBOOK_EXPORT_FILENAME=input.csv

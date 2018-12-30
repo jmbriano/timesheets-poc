@@ -1,7 +1,6 @@
 package be.lemonade.timesheet;
 
 import be.lemonade.timesheet.model.ActivityKey;
-import be.lemonade.timesheet.model.ClientTimeEntry;
 import be.lemonade.timesheet.model.Employee;
 import be.lemonade.timesheet.util.ConfigurationReader;
 import be.lemonade.timesheet.util.DateUtil;
@@ -29,6 +28,7 @@ public class TimesheetWriter {
         String templateFileName = conf.getValue(ConfigurationReader.TEMPLATE_FILENAME);
         String outputNameTemplate = conf.getValue(ConfigurationReader.OUTPUT_FILENAME);
         String outputDirectory = conf.getValue(ConfigurationReader.OUTPUT_DIR);
+        String splitMode = conf.getValue(ConfigurationReader.SPLIT_MODE);
 
         String employeeName = employee.getName();
 
@@ -51,8 +51,13 @@ public class TimesheetWriter {
         for (ActivityKey key : allKeys) {
 
             writeRowHeader(sheet, rowIndex,key);
-            writeTimes(sheet.getRow(rowIndex),key,month,year,employee, format);
-
+            if ("reality".equalsIgnoreCase(splitMode)) {
+                writeTimesPerDay(sheet.getRow(rowIndex), key, month, year, employee, format);
+            } else if ("evenly".equalsIgnoreCase(splitMode)){
+                    writeTimesEvenly(sheet.getRow(rowIndex), key, month, year, employee, format);
+            } else {
+                throw new RuntimeException("Invalid SPLIT_MODE found in configuration file: ("+splitMode+"). Options are: [reality|evenly]");
+            }
             rowIndex++;
         }
 
@@ -85,7 +90,7 @@ public class TimesheetWriter {
 
     }
 
-    private static void writeTimes(Row row, ActivityKey key, int month, int year, Employee employee, String format) {
+    private static void writeTimesPerDay(Row row, ActivityKey key, int month, int year, Employee employee, String format) {
         int firstDayColumn = CellReference.convertColStringToIndex("G");
 
         // Iterate each day and ask number of hours
@@ -107,6 +112,38 @@ public class TimesheetWriter {
                 cell.setCellType(CellType.NUMERIC);
                 cell.setCellStyle(style);
                 cell.setCellValue(hours);
+
+            }
+        }
+    }
+
+    private static void writeTimesEvenly(Row row, ActivityKey key, int month, int year, Employee employee, String format) {
+        int firstDayColumn = CellReference.convertColStringToIndex("G");
+
+        double totalTimeForActivity = employee.getTotalTimeForActivity(key);
+        int workingDaysInMonth = getWeekDaysInMonth(month,year);
+
+        double hoursPerDay = totalTimeForActivity/workingDaysInMonth;
+        Calendar cal = Calendar.getInstance();
+
+        // Iterate each day and ask number of hours
+        for (int day = 1; day <= lastDayOfMonth(month, year); day++) {
+            Date date = DateUtil.createDate(day, month, year);
+
+            // Write value in cell (only if bigger than 0)
+            cal.setTime(date);
+            if (hoursPerDay > 0 && cal.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && cal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+
+                Cell cell = row.getCell(firstDayColumn + day - 1);
+                if (cell == null)
+                    cell = row.createCell(firstDayColumn + day - 1);
+
+                CellStyle style = cell.getCellStyle();
+                style.setDataFormat(row.getSheet().getWorkbook().createDataFormat().getFormat(format));
+
+                cell.setCellType(CellType.NUMERIC);
+                cell.setCellStyle(style);
+                cell.setCellValue(hoursPerDay);
 
             }
         }
@@ -161,5 +198,28 @@ public class TimesheetWriter {
 
         return cal.get(Calendar.DAY_OF_MONTH);
 
+    }
+
+    public static int getWeekDaysInMonth(int month, int year) {
+
+        if (month<1 || month > 12){
+            throw new RuntimeException("Invalid month: "+month);
+        }
+        Calendar startCal = Calendar.getInstance();
+        startCal.setTime(DateUtil.createDate(1,month,year));
+
+        Calendar endCal = Calendar.getInstance();
+        endCal.setTime(DateUtil.createDate(lastDayOfMonth(month,year),month,year));
+
+        int workDays = 0;
+
+        do {
+            if (startCal.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && startCal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                workDays++;
+            }
+            startCal.add(Calendar.DAY_OF_MONTH, 1);
+        } while (startCal.getTimeInMillis() <= endCal.getTimeInMillis());
+
+        return workDays;
     }
 }

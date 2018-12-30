@@ -106,6 +106,24 @@ public class Employee {
         return activityTotal;
     }
 
+    /**
+     * This method sums and returns the total hours spent in a given activity (row)
+     *
+     * @param activity
+     * @return
+     */
+    public double getTotalTimeForActivity(ActivityKey activity) {
+        double activityTotal = 0;
+
+        for (ClientTimeEntry currentEntry : timeEntries) {
+            if (currentEntry.getActivity().equals(activity)) {
+                activityTotal += currentEntry.getTime_hs();
+            }
+        }
+
+        return activityTotal;
+    }
+
     public String parseDate(Date date) {
         DateFormat outputFormatter = new SimpleDateFormat("MM/dd/yyyy");
         String output = outputFormatter.format(date);

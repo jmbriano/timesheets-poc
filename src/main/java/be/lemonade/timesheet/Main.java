@@ -28,9 +28,10 @@ public class Main {
         // filter sword entries
         List<FreshbookTimeEntry> filteredFreshbookTimeEntries = filterClients(freshbookTimeEntries, config.getValue(ConfigurationReader.RELEVANT_PROJECTS));
         System.out.println(" - Relevant entries found ("+config.getValue(ConfigurationReader.RELEVANT_PROJECTS)+"): "+filteredFreshbookTimeEntries.size());
+        System.out.println();
 
         // Map FreshbookTimeEntry to ClientTimeEntry
-        List<ClientTimeEntry> swordTimeEntries = null;
+        List<ClientTimeEntry> swordTimeEntries;
         try {
             swordTimeEntries = TimeEntryTransformer.transform(filteredFreshbookTimeEntries);
         } catch (RuntimeException e){

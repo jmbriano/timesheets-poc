@@ -11,9 +11,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class TimeEntryTransformer {
 
@@ -31,6 +29,8 @@ public class TimeEntryTransformer {
         List<ClientTimeEntry> clientTimeEntryList = new ArrayList<ClientTimeEntry>();
         try {
             List<MapperEntry> mappers = readMapEntries();
+            Map<String, Map> missingMapperEntries = new HashMap<String, Map>();
+
             for (FreshbookTimeEntry fte: timeEntries){
                 MapperEntry map = findMapper(mappers, fte.getMyClient(), fte.getMyProject(), fte.getMyTask());
                 if (map != null){
@@ -47,9 +47,15 @@ public class TimeEntryTransformer {
                                     Double.parseDouble(fte.getMyHours())));
 
                 } else {
-                    throw new RuntimeException("ERROR: Could not find map entry for: \""+fte.getMyClient()+"\",\""+fte.getMyProject()+"\",\""+fte.getMyTask()+"\" in "+MAPPER_FILE_NAME+". "+
-                    "Add an entry in "+MAPPER_FILE_NAME+" so the tool knows to which timesheet row to map the entries found in Freshbook");
+
+                    recordMissingMapperEntryAndHours(missingMapperEntries, fte);
+
                 }
+            }
+
+            if (!missingMapperEntries.keySet().isEmpty()){
+
+                throw new RuntimeException(getStringError(missingMapperEntries));
             }
         } catch (ParseException e){
             throw new RuntimeException("ERROR: Can not transform the list. Invalid date found. Date should have format: "+DATE_FORMAT);
@@ -58,6 +64,66 @@ public class TimeEntryTransformer {
         }
 
         return clientTimeEntryList;
+    }
+
+    private static void recordMissingMapperEntryAndHours(Map<String, Map> missingMapperEntries, FreshbookTimeEntry fte) {
+
+        String missingEntry = "\""+fte.getMyClient()+"\",\""+fte.getMyProject()+"\",\""+fte.getMyTask()+"\",";
+
+        if (!missingMapperEntries.keySet().contains(missingEntry)){
+
+            Map<String,Double> employees = new HashMap<String, Double>();
+            employees.put(fte.getMyPerson(),Double.parseDouble(fte.getMyHours()));
+            missingMapperEntries.put(missingEntry, employees);
+
+        } else {
+
+            Map<String,Double> employees =  missingMapperEntries.get(missingEntry);
+            if (employees.keySet().contains(fte.getMyPerson())){
+                employees.put(fte.getMyPerson(),employees.get(fte.getMyPerson())+Double.parseDouble(fte.getMyHours()));
+            } else {
+                employees.put(fte.getMyPerson(),Double.parseDouble(fte.getMyHours()));
+            }
+        }
+    }
+
+    private static String getStringError(Map<String, Map> missingMapperEntries) {
+        StringBuilder errorMessage = new StringBuilder();
+
+        errorMessage.append("ERROR: The following entries are missing in the mapper: \n\n");
+
+        errorMessage.append(buildMissingEntriesList(missingMapperEntries,true));
+
+        errorMessage.append("\nTo fix this, add the following lines in "+MAPPER_FILE_NAME+":\n\n");
+
+        errorMessage.append(buildMissingEntriesList(missingMapperEntries,false));
+        return errorMessage.toString();
+    }
+
+    private static String buildMissingEntriesList(Map<String, Map> missingMapperEntriesWithEmployees, boolean withHours){
+
+        StringBuilder message = new StringBuilder();
+        for (String s: missingMapperEntriesWithEmployees.keySet()){
+            message.append(s);
+            if (withHours) {
+                message.append(" <--- ");
+                Map<String, Double> missingEntries = missingMapperEntriesWithEmployees.get(s);
+                message.append(" (");
+                boolean first = true;
+                for (String employee : missingEntries.keySet()) {
+                    if (!first)
+                        message.append(" || ");
+                    Double hours = missingEntries.get(employee);
+                    message.append(employee + ": " + Math.round(hours) + "hr");
+                    first = false;
+                }
+                message.append(")");
+            }
+            message.append("\n");
+        }
+
+        return message.toString();
+
     }
 
     private static List<MapperEntry> readMapEntries() throws IOException {

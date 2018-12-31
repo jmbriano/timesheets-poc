@@ -70,7 +70,9 @@ public class Main {
 
             println("There are lines missing in the mapper. Check '"+outputFileName+"'for details", standardLog);
 
-            println(e.getMessage(), outputFileName);
+            println(e.getMessage(), outputFileName,false);
+
+            writeToFile(e.getMessage(),standardLog,true);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -284,14 +286,18 @@ public class Main {
         return filtered;
     }
 
-    private static void println(String text, String filename ){
+    private static void println(String text, String filename){
+        println(text,filename,true);
+    }
+
+    private static void println(String text, String filename, boolean append){
 
         // Print the text in the standard output
         System.out.println(text);
 
         if (filename != null){
             try{
-                writeToFile(text, filename);
+                writeToFile(text, filename, append);
             } catch (IOException e) {
                 System.out.println("ERROR: Can not write in "+ filename+". Error details:");
                 e.printStackTrace();
@@ -300,8 +306,8 @@ public class Main {
         }
     }
 
-    public static void writeToFile(String line, String filename) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true));
+    public static void writeToFile(String line, String filename, boolean append) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filename, append));
         writer.append(line);
         writer.append("\n");
         writer.close();

@@ -20,6 +20,8 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         ConfigurationReader config = new ConfigurationReader();
+        List<String> warningMoreHours = new ArrayList<String>();
+        List<String> warningLessHours = new ArrayList<String>();
 
         try {
 
@@ -60,7 +62,9 @@ public class Main {
 
             swordTimeEntries = TimeEntryTransformer.transform(filteredFreshbookTimeEntries);
 
-            createTimesheets(swordTimeEntries);
+            createTimesheets(config, swordTimeEntries, warningLessHours, warningMoreHours);
+
+            printWarnings(warningLessHours, warningMoreHours);
 
             generateBudgetCardsSummary(config, swordTimeEntries);
 
@@ -80,6 +84,25 @@ public class Main {
             println(e.getMessage());
         }
 
+    }
+
+    private static void printWarnings(List<String> warningLessHours, List<String> warningMoreHours) {
+
+        println();
+
+        if (warningLessHours.size()>0 || warningMoreHours.size()>0){
+            println("WARNINGs:\n");
+        }
+        for (String warning: warningLessHours){
+            println("WARNING: " + warning);
+        }
+
+        println();
+
+        for (String warning: warningMoreHours){
+            println("WARNING: " + warning);
+        }
+        println();
     }
 
     private static void generateBudgetCardsSummary(ConfigurationReader config, List<ClientTimeEntry> swordTimeEntries) {
@@ -111,7 +134,15 @@ public class Main {
         }
     }
 
-    private static void createTimesheets(List<ClientTimeEntry> swordTimeEntries) throws IOException {
+    private static void createTimesheets(ConfigurationReader conf, List<ClientTimeEntry> swordTimeEntries, List<String> warningsLess, List<String> warningsMore) throws IOException {
+
+        int month = Integer.parseInt(conf.getValue(ConfigurationReader.MONTH));
+        int year = Integer.parseInt(conf.getValue(ConfigurationReader.YEAR));
+        int warningLimit = Integer.parseInt(conf.getValue(ConfigurationReader.WARNING_LIMIT_HR));
+
+        int weekDays = DateUtil.getWeekDaysInMonth(month,year);
+        int targetHours = weekDays * 8;
+
         // Get distinct employees
         println("Reading employees:");
         Map<String, List<ClientTimeEntry>> employees = getEmployeesMap(swordTimeEntries);
@@ -128,6 +159,15 @@ public class Main {
             try {
                 // Write timesheets
                 TimesheetWriter.write(employee);
+
+                int total = (int)employee.getTotalTime();
+                if ((total-targetHours)>warningLimit){
+                    warningsMore.add(employee.getName() + " worked " + total +" hr which is "+(total-targetHours)+" MORE than the month target ("+targetHours+")");
+                }
+                if ((targetHours-total)>warningLimit){
+                    warningsLess.add(employee.getName() + " worked " + total +" hr which is "+(targetHours-total)+" LESS than the month target ("+targetHours+")");
+                }
+
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
             }

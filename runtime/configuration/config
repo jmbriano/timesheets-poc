@@ -18,6 +18,10 @@ SPLIT_MODE=REALITY
 If EXPAND=YES then the actual totals will be linearly extrapolated to the whole month. Otherwise no extrapolation will occur.
 EXPAND=YES
 
+# Each month there are a number of week days. This weekdays define the target working hours.
+# If someone has exceeded or is missing more than WARNING_LIMIT_HR to the target, a warning will be shown.
+WARNING_LIMIT_HR=16
+
 # If you need to add a common description to all the timesheets, it can be added here. The tool will look for a combination of SC_RFA_CI_WP (values concatenated with '_'). It will use the most precise one.
 # Examples:
 # WP.8.1.1=A,B,C will add "A,B,C" to every row that contains WP.8.1.1

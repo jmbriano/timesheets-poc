@@ -147,7 +147,7 @@ public class TimesheetWriter {
         int firstDayColumn = CellReference.convertColStringToIndex(columnName);
 
         // Iterate each day and ask number of hours
-        for (int day = 1; day <= lastDayOfMonth(month, year); day++) {
+        for (int day = 1; day <= DateUtil.lastDayOfMonth(month, year); day++) {
             Date date = DateUtil.createDate(day, month, year);
 
             double hours = employee.getTotalTimeForActivityOnDate(key, date);
@@ -166,13 +166,13 @@ public class TimesheetWriter {
         int firstDayColumn = CellReference.convertColStringToIndex(columnName);
 
         double totalTimeForActivity = employee.getTotalTimeForActivity(key);
-        int workingDaysInMonth = getWeekDaysInMonth(month,year);
+        int workingDaysInMonth = DateUtil.getWeekDaysInMonth(month,year);
 
         double hoursPerDay = totalTimeForActivity/workingDaysInMonth;
         Calendar cal = Calendar.getInstance();
 
         // Iterate each day and ask number of hours
-        for (int day = 1; day <= lastDayOfMonth(month, year); day++) {
+        for (int day = 1; day <= DateUtil.lastDayOfMonth(month, year); day++) {
             Date date = DateUtil.createDate(day, month, year);
 
             // Write value in cell (only if bigger than 0)
@@ -199,7 +199,7 @@ public class TimesheetWriter {
         if (expand){
 
             double totalHoursForEmployee = employee.getTotalTime();
-            int workingDaysInMonth = getWeekDaysInMonth(month,year);
+            int workingDaysInMonth = DateUtil.getWeekDaysInMonth(month,year);
             double targetWorkingHoursInMonth = workingDaysInMonth * 8;
 
             totalHoursInActivity = totalHoursInActivity * (targetWorkingHoursInMonth/totalHoursForEmployee);
@@ -296,37 +296,4 @@ public class TimesheetWriter {
         cell.getCellStyle().setRotation((short)-90);
     }
 
-    private static int lastDayOfMonth(int month, int year) {
-        Date firstDay = DateUtil.createDate(1,month,year);
-        Date date = DateUtil.getLastDateOfMonth(firstDay);
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-
-        return cal.get(Calendar.DAY_OF_MONTH);
-
-    }
-
-    public static int getWeekDaysInMonth(int month, int year) {
-
-        if (month<1 || month > 12){
-            throw new RuntimeException("Invalid month: "+month);
-        }
-        Calendar startCal = Calendar.getInstance();
-        startCal.setTime(DateUtil.createDate(1,month,year));
-
-        Calendar endCal = Calendar.getInstance();
-        endCal.setTime(DateUtil.createDate(lastDayOfMonth(month,year),month,year));
-
-        int workDays = 0;
-
-        do {
-            if (startCal.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && startCal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
-                workDays++;
-            }
-            startCal.add(Calendar.DAY_OF_MONTH, 1);
-        } while (startCal.getTimeInMillis() <= endCal.getTimeInMillis());
-
-        return workDays;
-    }
 }

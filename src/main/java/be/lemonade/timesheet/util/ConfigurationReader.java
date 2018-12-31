@@ -25,6 +25,7 @@ public class ConfigurationReader {
     public static String FIRST_DATE_COLUMN = "FIRST_DATE_COLUMN";
     public static String HOURS_FORMAT = "HOURS_FORMAT";
     public static String FORECAST_TAG_ROW = "FORECAST_TAG_ROW";
+    public static String WARNING_LIMIT_HR = "WARNING_LIMIT_HR";
 
     private Properties properties;
 

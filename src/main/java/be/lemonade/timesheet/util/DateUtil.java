@@ -36,4 +36,38 @@ public class DateUtil {
         return cal.getTime();
 
     }
+
+    public static int getWeekDaysInMonth(int month, int year) {
+
+        if (month<1 || month > 12){
+            throw new RuntimeException("Invalid month: "+month);
+        }
+        Calendar startCal = Calendar.getInstance();
+        startCal.setTime(createDate(1,month,year));
+
+        Calendar endCal = Calendar.getInstance();
+        endCal.setTime(createDate(lastDayOfMonth(month,year),month,year));
+
+        int workDays = 0;
+
+        do {
+            if (startCal.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && startCal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                workDays++;
+            }
+            startCal.add(Calendar.DAY_OF_MONTH, 1);
+        } while (startCal.getTimeInMillis() <= endCal.getTimeInMillis());
+
+        return workDays;
+    }
+
+    public static int lastDayOfMonth(int month, int year) {
+        Date firstDay = createDate(1,month,year);
+        Date date = getLastDateOfMonth(firstDay);
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        return cal.get(Calendar.DAY_OF_MONTH);
+
+    }
 }

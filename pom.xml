@@ -6,7 +6,7 @@
     <packaging>jar</packaging>
     <groupId>be.lemonade.admin</groupId>
     <artifactId>timesheet-creator</artifactId>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.0</version>
 
     <repositories>
       <repository>

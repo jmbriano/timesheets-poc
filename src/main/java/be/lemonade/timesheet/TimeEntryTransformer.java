@@ -91,7 +91,7 @@ public class TimeEntryTransformer {
     private static String getStringError(Map<String, Map> missingMapperEntries) {
         StringBuilder errorMessage = new StringBuilder();
 
-        errorMessage.append("ERROR: The following entries are missing in the mapper: \n\n");
+        errorMessage.append("\nERROR: The following entries are missing in the mapper: \n\n");
 
         errorMessage.append(buildMissingEntriesList(missingMapperEntries,true));
 

@@ -74,7 +74,7 @@ public class FreshbookOnlineReader {
         XPath xPath =  XPathFactory.newInstance().newXPath();
 
         for (int currentPage = 1; currentPage <= pages; currentPage++){
-            System.out.println("Reading Time Entries, Page: "+ currentPage +"/"+pages);
+            System.out.println("   Loading Freshbooks pages: "+ currentPage +"/"+pages);
 
             NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(document, XPathConstants.NODESET);
 

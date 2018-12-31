@@ -82,7 +82,7 @@ public class TimesheetWriter {
                     boolean expand = "YES".equalsIgnoreCase(conf.getValue(ConfigurationReader.EXPAND));
                     writeProvisionalTimes(sheet.getRow(rowIndex), firstColumnWithDate, key, month, year, employee, format, expand);
                 } else {
-                    throw new RuntimeException("Invalid SPLIT_MODE found in configuration file: (" + splitMode + "). Options are: [reality|evenly]");
+                    throw new RuntimeException("Invalid SPLIT_MODE found in configuration file: (" + splitMode + "). Options are: ["+SPLIT_EVENLY+"|"+SPLIT_REALITY+"|"+SPLIT_PROVISIONAL+"]");
                 }
                 rowIndex++;
             }
@@ -94,7 +94,6 @@ public class TimesheetWriter {
 
         // Write output file
         String filename = createOutputFilename(year, month, employeeName, outputNameTemplate);
-        System.out.println("  Created file: "+ filename);
         FileOutputStream fileOut = new FileOutputStream(outputDirectory+filename);
         wb.write(fileOut);
         fileOut.close();

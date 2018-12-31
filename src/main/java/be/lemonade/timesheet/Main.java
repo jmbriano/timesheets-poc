@@ -1,21 +1,25 @@
 package be.lemonade.timesheet;
 
 import be.lemonade.timesheet.model.ClientTimeEntry;
-import be.lemonade.timesheet.model.FreshbookTimeEntry;
 import be.lemonade.timesheet.model.Employee;
+import be.lemonade.timesheet.model.FreshbookTimeEntry;
 import be.lemonade.timesheet.model.exceptions.MissingMapperEntryException;
 import be.lemonade.timesheet.util.ConfigurationReader;
 import be.lemonade.timesheet.util.DateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.*;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Main {
+
+    private static String version = "3.1";
 
     public static void main(String[] args) throws IOException {
 
@@ -23,96 +27,147 @@ public class Main {
         List<String> warningMoreHours = new ArrayList<String>();
         List<String> warningLessHours = new ArrayList<String>();
 
+        String mapperErrorLog = buildMissingMapperOutputFilename(config);
+        String standardLog = buildBudgetCardOutputFilename(config);
+
+        println("=================================================================", standardLog);
+        println("Running Timesheets tool v"+version+" on "+ new Date().toString(), standardLog);
+        println("=================================================================", standardLog);
+
         try {
 
             List<FreshbookTimeEntry> freshbookTimeEntries;
 
-            String source = config.getValue(ConfigurationReader.DATA_SOURCE);
-            if ("ONLINE".equalsIgnoreCase(source)){
-                println("Reading freshbook directly from: " + config.getValue(ConfigurationReader.FRESHBOOK_API_URL));
-                FreshbookOnlineReader onlineLoader = new FreshbookOnlineReader(
-                        config.getValue(ConfigurationReader.FRESHBOOK_API_URL),
-                        config.getValue(ConfigurationReader.FRESHBOOK_API_TOKEN),
-                        true,
-                        config.getValue(ConfigurationReader.OUTPUT_DIR)+config.getValue(ConfigurationReader.FRESHBOOK_OUTPUT_CSV_NAME));
+            freshbookTimeEntries = loadFreshbookTimeEntries(config, standardLog);
 
-                Integer month = Integer.parseInt(config.getValue(ConfigurationReader.MONTH));
-                Integer year = Integer.parseInt(config.getValue(ConfigurationReader.YEAR));
-                Date from = DateUtil.createDate(1,month, year);
-                Date to = DateUtil.getLastDateOfMonth(from);
-
-                freshbookTimeEntries = onlineLoader.parseRecords(from,to);
-
-            } else if ("CSV".equalsIgnoreCase(source)){
-                println("Reading freshbook records from CSV file: "+ config.getValue(ConfigurationReader.FRESHBOOK_EXPORT_FILENAME));
-                freshbookTimeEntries = FreshbookCSVReader.parseRecords(config.getValue(ConfigurationReader.FRESHBOOK_EXPORT_FILENAME));
-
-            } else {
-                System.out.println("ERROR: DATA_SOURCE should be either ONLINE or CSV");
-                return;
-            }
-            println(" - Total entries found: "+freshbookTimeEntries.size());
+            println("",standardLog);
 
             // filter relevant entries
             List<FreshbookTimeEntry> filteredFreshbookTimeEntries = filterClients(freshbookTimeEntries, config.getValue(ConfigurationReader.RELEVANT_PROJECTS));
-            println(" - Relevant entries found ("+config.getValue(ConfigurationReader.RELEVANT_PROJECTS)+"): "+filteredFreshbookTimeEntries.size());
-            println();
+
+            if (filteredFreshbookTimeEntries.isEmpty()){
+                println("No relevant entries for:'"+config.getValue(ConfigurationReader.RELEVANT_PROJECTS)+"'. Ending tool.",standardLog);
+                return;
+            }
+
+            println("Filtered relevant entries for:'"+config.getValue(ConfigurationReader.RELEVANT_PROJECTS)+"': "+filteredFreshbookTimeEntries.size(),standardLog);
+
+            println("",standardLog);
 
             List<ClientTimeEntry> swordTimeEntries;
 
             swordTimeEntries = TimeEntryTransformer.transform(filteredFreshbookTimeEntries);
 
-            createTimesheets(config, swordTimeEntries, warningLessHours, warningMoreHours);
+            createTimesheets(config, swordTimeEntries, warningLessHours, warningMoreHours, standardLog);
 
-            printWarnings(warningLessHours, warningMoreHours);
+            printWarnings(config, warningLessHours, warningMoreHours,standardLog);
 
-            generateBudgetCardsSummary(config, swordTimeEntries);
+            generateBudgetCardsSummary(swordTimeEntries, standardLog);
 
         } catch (MissingMapperEntryException e){
 
             String outputFileName = buildMissingMapperOutputFilename(config);
 
+            println("There are lines missing in the mapper. Check '"+outputFileName+"'for details", standardLog);
+
             println(e.getMessage(), outputFileName);
 
-        } catch (ParseException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (XPathExpressionException e) {
-            e.printStackTrace();
         } catch (RuntimeException e){
-            println(e.getMessage());
+            println(e.getMessage(),standardLog);
         }
+
+        println("=================================================================", standardLog);
+        println("Exiting Timesheets tool v"+version+" on "+ new Date().toString(), standardLog);
+        println("=================================================================", standardLog);
+
 
     }
 
-    private static void printWarnings(List<String> warningLessHours, List<String> warningMoreHours) {
+    private static List<FreshbookTimeEntry> loadFreshbookTimeEntries(ConfigurationReader config, String logName) {
+        List<FreshbookTimeEntry> freshbookTimeEntries;
+        String source = config.getValue(ConfigurationReader.DATA_SOURCE);
 
-        println();
+        if ("ONLINE".equalsIgnoreCase(source)){
+
+            println("Reading Time Entries from Freshbook API: " + config.getValue(ConfigurationReader.FRESHBOOK_API_URL), logName);
+
+            FreshbookOnlineReader onlineLoader = new FreshbookOnlineReader(
+                    config.getValue(ConfigurationReader.FRESHBOOK_API_URL),
+                    config.getValue(ConfigurationReader.FRESHBOOK_API_TOKEN),
+                    true,
+                    config.getValue(ConfigurationReader.OUTPUT_DIR)+config.getValue(ConfigurationReader.FRESHBOOK_OUTPUT_CSV_NAME));
+
+
+            Integer month = Integer.parseInt(config.getValue(ConfigurationReader.MONTH));
+            Integer year = Integer.parseInt(config.getValue(ConfigurationReader.YEAR));
+            Date from = DateUtil.createDate(1,month, year);
+            Date to = DateUtil.getLastDateOfMonth(from);
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+
+            println("   Period extracted: " + df.format(from) +" to "+ df.format(to) + " (both included)", logName);
+
+            try {
+
+                freshbookTimeEntries = onlineLoader.parseRecords(from,to);
+
+            } catch (Exception e) {
+                println("ERROR: An error occurred while obtaining the Time Entries from Freshbook. If the problem persist, export the CSV from Freshbooks and set configuration to use DATA_SOURCE=CSV", logName);
+                println("ERROR: Exception: "+e.getMessage(), logName);
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+
+            println("   The Time Entries obtained were saved in: " + config.getValue(ConfigurationReader.OUTPUT_DIR)+config.getValue(ConfigurationReader.FRESHBOOK_OUTPUT_CSV_NAME), logName);
+
+        } else if ("CSV".equalsIgnoreCase(source)){
+            println("Reading freshbook records from CSV file: "+ config.getValue(ConfigurationReader.FRESHBOOK_EXPORT_FILENAME),logName);
+            try {
+                freshbookTimeEntries = FreshbookCSVReader.parseRecords(config.getValue(ConfigurationReader.FRESHBOOK_EXPORT_FILENAME));
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+
+        } else {
+            println("ERROR: DATA_SOURCE should be either ONLINE or CSV", logName);
+            throw new RuntimeException("ERROR: DATA_SOURCE should be either ONLINE or CSV");
+        }
+        println("   Loading finished. Total entries found: "+freshbookTimeEntries.size(),logName);
+        return freshbookTimeEntries;
+    }
+
+    private static void printWarnings(ConfigurationReader conf, List<String> warningLessHours, List<String> warningMoreHours, String logName) {
+
+        println("",logName);
 
         if (warningLessHours.size()>0 || warningMoreHours.size()>0){
-            println("WARNINGs:\n");
+            int warningLimit = Integer.parseInt(conf.getValue(ConfigurationReader.WARNING_LIMIT_HR));
+            println("\nHours volume analysis. Limit used is "+warningLimit+" hours:\n",logName);
         }
+
+        println("   Space left:",logName);
         for (String warning: warningLessHours){
-            println("WARNING: " + warning);
+            println("       WARNING: " + warning,logName);
         }
 
-        println();
+        println("",logName);
 
+        println("   Overwork:",logName);
         for (String warning: warningMoreHours){
-            println("WARNING: " + warning);
+            println("       WARNING: " + warning,logName);
         }
-        println();
+        println("",logName);
     }
 
-    private static void generateBudgetCardsSummary(ConfigurationReader config, List<ClientTimeEntry> swordTimeEntries) {
-        String outputFileName = buildBudgetCardOutputFilename(config);
+    private static void generateBudgetCardsSummary(List<ClientTimeEntry> swordTimeEntries, String outputFileName) {
 
-        println("Reading QTMs:", outputFileName);
+        println("Summary for Budget Cards:\n", outputFileName);
         List<String> qtms = getQTMs(swordTimeEntries);
         Collections.sort(qtms);
         qtms.remove(""); // remove horizontal activities
-        println(" - Total QTMs found: "+ qtms.size(), outputFileName);
 
         for (String qtm : qtms){
             if (qtm!=null && !"".equals(qtm) ) {
@@ -134,7 +189,7 @@ public class Main {
         }
     }
 
-    private static void createTimesheets(ConfigurationReader conf, List<ClientTimeEntry> swordTimeEntries, List<String> warningsLess, List<String> warningsMore) throws IOException {
+    private static void createTimesheets(ConfigurationReader conf, List<ClientTimeEntry> swordTimeEntries, List<String> warningsLess, List<String> warningsMore, String logName) throws IOException {
 
         int month = Integer.parseInt(conf.getValue(ConfigurationReader.MONTH));
         int year = Integer.parseInt(conf.getValue(ConfigurationReader.YEAR));
@@ -144,13 +199,11 @@ public class Main {
         int targetHours = weekDays * 8;
 
         // Get distinct employees
-        println("Reading employees:");
+        println("Writing Timesheets",logName);
         Map<String, List<ClientTimeEntry>> employees = getEmployeesMap(swordTimeEntries);
-        println(" - Total employees found: "+employees.keySet().size());
-
+        int i = 1;
         for (String name : employees.keySet()){
-            println("-------------------------------------------------------------------------------------");
-            println("Creating timesheet for: "+ name.toUpperCase());
+            println("   "+i+"/"+employees.keySet().size()+": "+ name.toUpperCase(),logName);
             Employee employee = new Employee(name);
             for (ClientTimeEntry timeEntry : employees.get(name)){
                 employee.addSwordEntry(timeEntry);
@@ -160,17 +213,22 @@ public class Main {
                 // Write timesheets
                 TimesheetWriter.write(employee);
 
-                int total = (int)employee.getTotalTime();
-                if ((total-targetHours)>warningLimit){
-                    warningsMore.add(employee.getName() + " worked " + total +" hr which is "+(total-targetHours)+" MORE than the month target ("+targetHours+")");
-                }
-                if ((targetHours-total)>warningLimit){
-                    warningsLess.add(employee.getName() + " worked " + total +" hr which is "+(targetHours-total)+" LESS than the month target ("+targetHours+")");
-                }
+                checkTimeVsTrgetTime(warningsLess, warningsMore, warningLimit, targetHours, employee);
 
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
             }
+            i++;
+        }
+    }
+
+    private static void checkTimeVsTrgetTime(List<String> warningsLess, List<String> warningsMore, int warningLimit, int targetHours, Employee employee) {
+        int total = (int)employee.getTotalTime();
+        if ((total-targetHours)>warningLimit){
+            warningsMore.add(employee.getName() + " worked " + total +" hr, which is "+(total-targetHours)+" MORE than the month target ("+targetHours+")");
+        }
+        if ((targetHours-total)>warningLimit){
+            warningsLess.add(employee.getName() + " worked " + total +" hr, which is "+(targetHours-total)+" LESS than the month target ("+targetHours+")");
         }
     }
 
@@ -226,21 +284,16 @@ public class Main {
         return filtered;
     }
 
-    private static void println(){
-        println("", null);
-    }
+    private static void println(String text, String filename ){
 
-    private static void println(String line){
-        println(line, null);
-    }
+        // Print the text in the standard output
+        System.out.println(text);
 
-    private static void println(String line, String filename ){
-        System.out.println(line);
         if (filename != null){
             try{
-                writeToFile(line, filename);
+                writeToFile(text, filename);
             } catch (IOException e) {
-                System.out.println("ERROR: Can not write in "+ filename);
+                System.out.println("ERROR: Can not write in "+ filename+". Error details:");
                 e.printStackTrace();
             }
 

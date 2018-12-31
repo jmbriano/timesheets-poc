@@ -1,0 +1,55 @@
+
+# Monthly properties
+OUTPUT_FILENAME=YYYY-MM SWORD TS NNNNN (DEF).xlsx
+
+# DATA_SOURCE can either be CSV or ONLINE. If ONLINE, it will extract the whole month from Freshbook directly.
+DATA_SOURCE=CSV
+
+MONTH=12
+YEAR=2018
+
+#Possible split modes:
+# REALITY: Hours are loaded in the day they were actually worked
+# EVENLY: The total hours for the row are split evenly in all working days
+# PROVISIONAL: The total hours will be recorded in the first week day. See EXPAND definition below.
+SPLIT_MODE=REALITY
+
+# EXPAND is only used if SPLIT_MODE=PROVISIONAL.
+If EXPAND=YES then the actual totals will be linearly extrapolated to the whole month. Otherwise no extrapolation will occur.
+EXPAND=YES
+
+# Each month there are a number of week days. This weekdays define the target working hours.
+# If someone has exceeded or is missing more than WARNING_LIMIT_HR to the target, a warning will be shown.
+WARNING_LIMIT_HR=16
+
+# If you need to add a common description to all the timesheets, it can be added here. The tool will look for a combination of SC_RFA_CI_WP (values concatenated with '_'). It will use the most precise one.
+# Examples:
+# WP.8.1.1=A,B,C will add "A,B,C" to every row that contains WP.8.1.1
+# PROJA_WP.8.1.1=D,E,F will add "D,E,F" to every row that contains WP.8.1.1 and PROJA as CI.
+
+PROJ_1_WP.8.1.1= This is the description for row with PROJ_1 and WP.8.1.1
+SC1_QTM3_PROJ_1_WP3=This is the description for row with SC1, QTM3, PROJ_1 and WP3
+WP3=This is the description for rows with WP3
+
+# HOURS_FORMAT=0 will show only the integer part (no decimals). HOURS_FORMAT=0.00 will show two decimals
+HOURS_FORMAT=0.00
+
+# Runtime properties
+FRESHBOOK_EXPORT_FILENAME=input.csv
+TEMPLATE_FILENAME=TEMPLATE.xlsx
+RELEVANT_PROJECTS=Client 1
+FRESHBOOK_DATE_FORMAT=MM/dd/yy
+OUTPUT_DIR=output/
+FRESHBOOK_API_URL=https://**********.freshbooks.com/api/2.1/xml-in
+FRESHBOOK_API_TOKEN=***********
+FRESHBOOK_OUTPUT_CSV_NAME=generated-input.csv
+
+
+# Template properties
+FIRST_PROJECT_ROW=6
+FIRST_DATE_COLUMN=G
+FORECAST_TAG_ROW=17
+
+
+
+

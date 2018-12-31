@@ -18,9 +18,9 @@ public class TimesheetWriter {
 
     private static int SHEET_ID = 0;
 
-    private static String SPLIT_EVENLY = "evenly";
-    private static String SPLIT_REALITY = "reality";
-    private static String SPLIT_PROVISIONAL = "provisional";
+    private static String SPLIT_EVENLY = "EVENLY";
+    private static String SPLIT_REALITY = "REALITY";
+    private static String SPLIT_PROVISIONAL = "PROVISIONAL";
 
     public static void write(Employee employee) throws IOException, InvalidFormatException {
 
@@ -65,25 +65,28 @@ public class TimesheetWriter {
         // Iterate the list of Activity
         for (ActivityKey key : allKeys) {
 
-            writeRowHeader(sheet, rowIndex,key);
+            if (employee.getTotalTimeForActivity(key)>0) {
+                writeRowHeader(sheet, rowIndex, key);
 
-            String description = getDescriptionForKey(conf, key);
+                String description = getDescriptionForKey(conf, key);
 
-            if(description != null ){
-                writeRowDescription(sheet, rowIndex,description);
-            }
+                if (description != null) {
+                    writeRowDescription(sheet, rowIndex, description);
+                }
 
-            if (SPLIT_REALITY.equalsIgnoreCase(splitMode)) {
-                writeTimesPerDay(sheet.getRow(rowIndex),firstColumnWithDate, key, month, year, employee, format);
-            } else if (SPLIT_EVENLY.equalsIgnoreCase(splitMode)){
+                if (SPLIT_REALITY.equalsIgnoreCase(splitMode)) {
+                    writeTimesPerDay(sheet.getRow(rowIndex), firstColumnWithDate, key, month, year, employee, format);
+                } else if (SPLIT_EVENLY.equalsIgnoreCase(splitMode)) {
                     writeTimesEvenly(sheet.getRow(rowIndex), firstColumnWithDate, key, month, year, employee, format);
-            } else if (SPLIT_PROVISIONAL.equalsIgnoreCase(splitMode)){
-                boolean expand = "YES".equalsIgnoreCase(conf.getValue(ConfigurationReader.EXPAND));
-                writeProvisionalTimes(sheet.getRow(rowIndex), firstColumnWithDate, key, month, year, employee, format, expand);
-            }else {
-                throw new RuntimeException("Invalid SPLIT_MODE found in configuration file: ("+splitMode+"). Options are: [reality|evenly]");
+                } else if (SPLIT_PROVISIONAL.equalsIgnoreCase(splitMode)) {
+                    boolean expand = "YES".equalsIgnoreCase(conf.getValue(ConfigurationReader.EXPAND));
+                    writeProvisionalTimes(sheet.getRow(rowIndex), firstColumnWithDate, key, month, year, employee, format, expand);
+                } else {
+                    throw new RuntimeException("Invalid SPLIT_MODE found in configuration file: (" + splitMode + "). Options are: [reality|evenly]");
+                }
+                rowIndex++;
             }
-            rowIndex++;
+
         }
 
         // Recalculate formulas

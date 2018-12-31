@@ -3,18 +3,18 @@
 OUTPUT_FILENAME=YYYY-MM SWORD TS NNNNN (DEF).xlsx
 
 # DATA_SOURCE can either be CSV or ONLINE. If ONLINE, it will extract the whole month from Freshbook directly.
-DATA_SOURCE=ONLINE
+DATA_SOURCE=CSV
 
 MONTH=12
 YEAR=2018
 
 #Possible split modes:
-# reality: Hours are loaded in the day they were actually worked
-# evenly: The total hours for the row are split evenly in all working days
-# provisional: The total hours will be recorded in the first week day. See EXPAND definition below.
-SPLIT_MODE=provisional
+# REALITY: Hours are loaded in the day they were actually worked
+# EVENLY: The total hours for the row are split evenly in all working days
+# PROVISIONAL: The total hours will be recorded in the first week day. See EXPAND definition below.
+SPLIT_MODE=REALITY
 
-# EXPAND is only used if SPLIT_MODE=provisional.
+# EXPAND is only used if SPLIT_MODE=PROVISIONAL.
 If EXPAND=YES then the actual totals will be linearly extrapolated to the whole month. Otherwise no extrapolation will occur.
 EXPAND=YES
 

@@ -56,6 +56,8 @@ public class Main {
 
             List<ClientTimeEntry> swordTimeEntries;
 
+            filteredFreshbookTimeEntries = TimeEntryTransformer.transformNames(filteredFreshbookTimeEntries);
+
             swordTimeEntries = TimeEntryTransformer.transform(filteredFreshbookTimeEntries);
 
             createTimesheets(config, swordTimeEntries, warningLessHours, warningMoreHours, standardLog);

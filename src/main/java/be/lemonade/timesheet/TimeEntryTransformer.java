@@ -67,6 +67,35 @@ public class TimeEntryTransformer {
         return clientTimeEntryList;
     }
 
+    public static List<FreshbookTimeEntry> transformNames (List<FreshbookTimeEntry> timeEntries) {
+        ConfigurationReader configurationReader = null;
+        try {
+            configurationReader = new ConfigurationReader();
+        } catch (IOException e){
+            // Do nothing. keep default date format
+        }
+
+        List<FreshbookTimeEntry> transformedTimeEntries = new ArrayList<FreshbookTimeEntry>();
+
+        for (FreshbookTimeEntry fte: timeEntries){
+            transformedTimeEntries.add(
+                    new FreshbookTimeEntry(
+                            transformName(configurationReader,fte.getMyPerson()),
+                            fte.getMyClient(),
+                            fte.getMyProject(),
+                            fte.getMyTask(),
+                            fte.getMyDate(),
+                            fte.getMyHours()
+                    )
+            );
+
+        }
+
+        return transformedTimeEntries;
+    }
+
+
+
     private static void recordMissingMapperEntryAndHours(Map<String, Map> missingMapperEntries, FreshbookTimeEntry fte) {
 
         String missingEntry = "\""+fte.getMyClient()+"\",\""+fte.getMyProject()+"\",\""+fte.getMyTask()+"\",";
@@ -86,6 +115,16 @@ public class TimeEntryTransformer {
                 employees.put(fte.getMyPerson(),Double.parseDouble(fte.getMyHours()));
             }
         }
+    }
+
+    private static String transformName(ConfigurationReader configurationReader, String myPerson) {
+        String code = myPerson;
+        try {
+            code = code.substring(0,code.indexOf(","));
+        } catch (Exception e){
+            code = myPerson.substring(0,3);
+        }
+        return configurationReader.getValue(code, myPerson);
     }
 
     private static String getStringError(Map<String, Map> missingMapperEntries) {

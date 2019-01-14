@@ -12,7 +12,7 @@ public class FreshbookReportReaderTest extends TestCase{
     public void testParseRecords() throws IOException {
         FreshbookCSVReader frr = new FreshbookCSVReader();
         List<FreshbookTimeEntry> timeEntryList = frr.parseRecords("runtime/input.csv");
-        Assert.assertTrue(timeEntryList.get(0).getMyPerson().contains("LastName, Name 1"));
+        Assert.assertEquals("AVE, 999",timeEntryList.get(0).getMyPerson());
     }
 
     public void testParseRecordsSize() throws IOException{

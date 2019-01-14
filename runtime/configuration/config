@@ -52,4 +52,8 @@ FORECAST_TAG_ROW=17
 
 
 
-
+#Name translations
+AVE=LastName, Name 1
+BSP=LastName, Name 2
+CLO=LastName, Name 3
+CNP=LastName, Name 4

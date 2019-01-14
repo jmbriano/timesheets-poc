@@ -54,4 +54,8 @@ public class ConfigurationReader {
     public String getValue(String configKey){
         return properties.getProperty(configKey,null);
     }
+
+    public String getValue(String configKey, String defaultVallue){
+        return properties.getProperty(configKey,defaultVallue);
+    }
 }

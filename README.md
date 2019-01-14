@@ -11,5 +11,5 @@ mvn clean install
 # How to run
 
 ```
-java -jar timesheet-creator-3.1.jar
+java -jar timesheet-creator-3.2.jar
 ```

@@ -9,7 +9,10 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -289,10 +292,12 @@ public class TimesheetWriter {
         if (cell == null)
             cell = row.createCell(colIndex);
         cell.setCellType(CellType.STRING);
+        CellStyle style = row.getSheet().getWorkbook().createCellStyle();
         cell.setCellValue(text);
-        cell.getCellStyle().setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-        cell.getCellStyle().setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        cell.getCellStyle().setRotation((short)-90);
+        style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        style.setRotation((short)90);
+        cell.setCellStyle(style);
     }
 
 }

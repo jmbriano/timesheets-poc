@@ -19,7 +19,7 @@ import java.util.*;
 
 public class Main {
 
-    private static String version = "3.1";
+    private static String version = "3.3";
 
     public static void main(String[] args) throws IOException {
 
